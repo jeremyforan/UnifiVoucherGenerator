@@ -1,4 +1,4 @@
-package unifi
+package UnifiVoucherGenerator
 
 const (
 	unifiApiBaseUrl = "https://unifi.jeremyforan.com"

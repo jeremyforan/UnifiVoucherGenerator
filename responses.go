@@ -1,4 +1,4 @@
-package unifi
+package UnifiVoucherGenerator
 
 import "encoding/json"
 

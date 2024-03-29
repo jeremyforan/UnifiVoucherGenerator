@@ -1,4 +1,4 @@
-module jeremyforan/unifi-network-application-go-voucher-generator
+module github.com/jeremyforan/UnifiVoucherGenerator
 
 go 1.22
 
