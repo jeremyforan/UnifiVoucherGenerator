@@ -7,22 +7,7 @@ The is an open-source Golang library designed to interface with the UniFi Networ
 
 By enabling the programmatic generation of vouchers, this library broadens the scope for creating better guest Wi-Fi experiences.
 
-## Features
-
-- Light/dark mode toggle
-- Live previews
-- Fullscreen mode
-- Cross platform
-
-
-## Demo
-
 ![](demo.gif)
-
-## Documentation
-
-[Documentation](https://linktodocumentation)
-
 
 ## Usage/Examples
 A basic example of the library creating a basic voucher.
@@ -69,6 +54,17 @@ func main() {
 }
 ```
 
+
+## Documentation
+
+### Expiry
+
+### Network Limits
+
+### Usage
+
+
+
 ## Running Tests
 
 To run tests, run the following command
@@ -85,6 +81,8 @@ To deploy this project run
 ```bash
   npm run deploy
 ```
+
+## Limitations
 
 
 ## Acknowledgements
@@ -116,7 +114,7 @@ Answer 2
 
 ## Feedback
 
-If you have any feedback, please reach out to us at fake@fake.com
+If you have any feedback, please reach out to us at jeremy.foran@gmail.com
 
 
 ## License
