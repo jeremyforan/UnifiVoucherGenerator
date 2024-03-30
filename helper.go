@@ -4,15 +4,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"time"
 )
-
-func NoteTimestamp() string {
-	currentTime := time.Now()
-
-	readableTimestamp := currentTime.Format("Monday, January 2, 2006 at 3:04 PM")
-	return readableTimestamp
-}
 
 func addBasicHeaders(req *http.Request) {
 	req.Header.Set("Accept", "*/*")
@@ -34,12 +26,6 @@ func addSecurityHeaders(req *http.Request) {
 	req.Header.Add("sec-fetch-mode", "cors")
 	req.Header.Add("sec-fetch-site", "same-origin")
 	req.Header.Add("sec-gpc", "1")
-}
-
-func NoteTimeStamp() string {
-	now := time.Now()           // Get the current date and time
-	layout := "January02152004" // Define the custom layout
-	return now.Format(layout)   // Format the current time according to the layout
 }
 
 func loggedIn(responseBody string) bool {
