@@ -10,6 +10,7 @@ import (
 type Voucher struct {
 	Id   string
 	data Data
+	Code
 }
 
 // NewDefaultVoucher creates a new Voucher struct to be used to create a new voucher.
@@ -27,6 +28,7 @@ func NewDefaultVoucher() Voucher {
 	}
 }
 
+// NewSingleUseVoucher creates a new Single Use Voucher.
 func NewSingleUseVoucher() Voucher {
 	return Voucher{
 		Id: uuid.NewV4().String(),
@@ -36,6 +38,7 @@ func NewSingleUseVoucher() Voucher {
 	}
 }
 
+// NewMultiUseVoucher creates a new Multi Use Voucher.
 func NewMultiUseVoucher(quota int) Voucher {
 	return Voucher{
 		Id: uuid.NewV4().String(),
@@ -45,6 +48,7 @@ func NewMultiUseVoucher(quota int) Voucher {
 	}
 }
 
+// NewUnlimitedUseVoucher creates a new Unlimited use Voucher.
 func NewUnlimitedUseVoucher() Voucher {
 	return Voucher{
 		Id: uuid.NewV4().String(),
@@ -52,4 +56,12 @@ func NewUnlimitedUseVoucher() Voucher {
 			Quota: int(vUnlimited),
 		},
 	}
+}
+
+func (v *Voucher) String() string {
+	return v.data.String()
+}
+
+func (v *Voucher) AccessCode() Code {
+	return v.Code
 }

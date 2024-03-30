@@ -1,6 +1,8 @@
 package UnifiVoucherGenerator
 
 import (
+	"github.com/jeremyforan/UnifiVoucherGenerator/credentials"
+	"github.com/jeremyforan/UnifiVoucherGenerator/voucher"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -10,14 +12,14 @@ import (
 
 // Client is the primary struct that interacts with the Unifi controller using http requests
 type Client struct {
-	Credentials UnifiCredentials
+	Credentials credentials.Credentials
 	client      *http.Client
 	Url         url.URL
 	token       string
 }
 
 // NewClient creates a new Client struct to interact with the Unifi controller
-func NewClient(credentials UnifiCredentials, url url.URL) *Client {
+func NewClient(credentials credentials.Credentials, url url.URL) *Client {
 	jar, _ := cookiejar.New(nil)
 	return &Client{
 		Credentials: credentials,
@@ -26,4 +28,13 @@ func NewClient(credentials UnifiCredentials, url url.URL) *Client {
 		},
 		Url: url,
 	}
+}
+
+func (c *Client) Login() error {
+
+	return nil
+}
+
+func (c *Client) AddVoucher(v voucher.Voucher) error {
+	return nil
 }

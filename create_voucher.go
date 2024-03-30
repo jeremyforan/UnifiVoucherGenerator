@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (c Client) RequestNewVoucher() error {
+func (c *Client) RequestNewVoucher() error {
 
 	v := voucher.NewDefaultVoucherRequest()
 
