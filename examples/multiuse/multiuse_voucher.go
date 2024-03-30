@@ -33,6 +33,7 @@ func main() {
 	err = client.AddVoucher(v)
 	if err != nil {
 		slog.Error("unable to add voucher")
+		panic(err)
 	}
 
 	fmt.Println(v.AccessCode())
