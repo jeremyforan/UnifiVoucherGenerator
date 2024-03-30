@@ -3,24 +3,68 @@ package UnifiVoucherGenerator
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"strings"
 )
 
+// UnifiCredentials is a struct that holds the username and password for the Unifi controller
 type UnifiCredentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Remember bool   `json:"remember"`
-	Strict   bool   `json:"strict"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	Remember     bool   `json:"remember"`
+	Strict       bool   `json:"strict"`
+	hidePassword bool
 }
 
+// NewUnifiCredentials creates a new UnifiCredentials struct to be used to log into the Unifi controller
 func NewUnifiCredentials(username string, password string) UnifiCredentials {
 	return UnifiCredentials{
-		Username: username,
-		Password: password,
-		Remember: true,
-		Strict:   true,
+		Username:     username,
+		Password:     password,
+		Remember:     true,
+		Strict:       true,
+		hidePassword: true,
 	}
+}
+
+// String returns the UnifiCredentials struct as a string
+func (u UnifiCredentials) String() string {
+	return fmt.Sprintf(`{"username":"%s","password":"%s","remember":%t,"strict":%t}`, u.Username, u.Password, u.Remember, u.Strict)
+}
+
+// HttpPayload returns the UnifiCredentials struct as a strings.Reader to be used in an http request.go as the body
+func (u UnifiCredentials) HttpPayload() *strings.Reader {
+	return strings.NewReader(u.String())
+}
+
+// LogValue returns the UnifiCredentials struct as a slog.Value for logging.
+func (u UnifiCredentials) LogValue() slog.Value {
+
+	p := u.Password
+	if u.hidePassword {
+		p = strings.Repeat("*", len(u.Password))
+	}
+
+	return slog.GroupValue(
+		slog.String("username", u.Username),
+		slog.String("password", p),
+		slog.Bool("remember", u.Remember),
+		slog.Bool("strict", u.Strict),
+	)
+}
+
+func loggedIn(responseBody string) bool {
+	loginResponse, err := processLoginResponse(string(responseBody))
+	if err != nil {
+		return false
+	}
+
+	if loginResponse.Meta.Rc == "ok" {
+		return true
+	}
+
+	return false
 }
 
 func (c *Client) Login() error {
@@ -35,7 +79,7 @@ func (c *Client) Login() error {
 
 	req.Header.Set("Referer", unifiApiLoginReferer)
 
-	body, cookies, err := c.MakeRequest(req)
+	body, cookies, err := c.buildRequest(req)
 	for _, cookie := range cookies {
 		if cookie.Name == "csrf_token" {
 			c.token = cookie.Value
@@ -78,25 +122,4 @@ func (c *Client) GetSelf() error {
 
 	fmt.Println(string(body))
 	return nil
-}
-
-func (u UnifiCredentials) String() string {
-	return fmt.Sprintf(`{"username":"%s","password":"%s","remember":%t,"strict":%t}`, u.Username, u.Password, u.Remember, u.Strict)
-}
-
-func (u UnifiCredentials) HttpPayload() *strings.Reader {
-	return strings.NewReader(u.String())
-}
-
-func loggedIn(responseBody string) bool {
-	loginResponse, err := processLoginResponse(string(responseBody))
-	if err != nil {
-		return false
-	}
-
-	if loginResponse.Meta.Rc == "ok" {
-		return true
-	}
-
-	return false
 }

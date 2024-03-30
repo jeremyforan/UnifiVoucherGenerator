@@ -1,41 +1,29 @@
 package UnifiVoucherGenerator
 
 import (
-	"io"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
 )
 
+// todo: add additional logging
+
+// Client is the primary struct that interacts with the Unifi controller using http requests
 type Client struct {
 	Credentials UnifiCredentials
-	Client      *http.Client
-	Url         string
+	client      *http.Client
+	Url         url.URL
 	token       string
 }
 
-func NewClient(creds UnifiCredentials) *Client {
+// NewClient creates a new Client struct to interact with the Unifi controller
+func NewClient(credentials UnifiCredentials, url url.URL) *Client {
 	jar, _ := cookiejar.New(nil)
 	return &Client{
-		Credentials: creds,
-		Client: &http.Client{
+		Credentials: credentials,
+		client: &http.Client{
 			Jar: jar,
 		},
-		Url: unifiApiBaseUrl,
+		Url: url,
 	}
-}
-
-func (c *Client) MakeRequest(req *http.Request) (string, []*http.Cookie, error) {
-	res, err := c.Client.Do(req)
-	if err != nil {
-		return "", nil, err
-	}
-
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return string(body), res.Cookies(), nil
 }

@@ -1,11 +1,20 @@
 package UnifiVoucherGenerator
 
-const (
-	unifiApiBaseUrl = "https://unifi.jeremyforan.com"
+//todo: is there a proper way to do this?
+//todo: do I need to consider dashboard versions?
 
-	unifiApiLogin          = unifiApiBaseUrl + "/api/login"
-	unifiApiLoginReferer   = unifiApiBaseUrl + "/manage/account/login"
-	unifiApiCreateVoucher  = unifiApiBaseUrl + "/api/s/default/cmd/hotspot"
-	unifiApiVouchers       = unifiApiBaseUrl + "/api/s/default/stat/voucher"
-	unifiApiVoucherReferer = unifiApiBaseUrl + "/manage/default/hotspot/vouchers"
+const (
+	unifiApiLogin          = "/api/login"
+	unifiApiLoginReferer   = "/manage/account/login"
+	unifiApiCreateVoucher  = "/api/s/default/cmd/hotspot"
+	unifiApiVouchers       = "/api/s/default/stat/voucher"
+	unifiApiVoucherReferer = "/manage/default/hotspot/vouchers"
+)
+
+//todo: add Days, Hours, Minutes for voucher request
+
+type voucherCmd string
+
+const (
+	createVoucher voucherCmd = "create-voucher"
 )

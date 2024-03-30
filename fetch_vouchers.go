@@ -1,6 +1,7 @@
 package UnifiVoucherGenerator
 
 import (
+	"github.com/jeremyforan/UnifiVoucherGenerator/voucher"
 	"net/http"
 )
 
@@ -42,7 +43,7 @@ func (c *Client) FetchVouchers() (UnifiVouchers, error) {
 	req.Header.Set("Referer", unifiApiVoucherReferer)
 	req.Header.Set("X-Csrf-Token", c.token)
 
-	body, _, err := c.MakeRequest(req)
+	body, _, err := c.buildRequest(req)
 
 	vouchers, err := processVoucherListResponse(body)
 	if err != nil {
@@ -68,10 +69,10 @@ func (v UnifiVouchers) GetLatestVoucher() UnifiVoucher {
 	return newestVoucher
 }
 
-func (v UnifiVoucher) GetVoucherByCode() (VoucherCode, error) {
-	c, err := NewVoucherFromString(v.Code)
+func (v UnifiVoucher) GetVoucherByCode() (voucher.Code, error) {
+	c, err := voucher.NewVoucherFromString(v.Code)
 	if err != nil {
-		return VoucherCode{}, err
+		return voucher.Code{}, err
 	}
 	return c, nil
 

@@ -17,10 +17,12 @@ func addBasicHeaders(req *http.Request) {
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("Origin", unifiApiBaseUrl)
 	req.Header.Set("Pragma", "no-cache")
 	req.Header.Set("DNT", "1") // Do Not Track
 }
+
+//todo: may need to be moved
+//req.Header.Set("Origin", unifiApiBaseUrl)
 
 func addSecurityHeaders(req *http.Request) {
 	req.Header.Add("sec-ch-ua", "\"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Brave\";v=\"122\"")
