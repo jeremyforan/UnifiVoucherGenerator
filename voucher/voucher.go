@@ -114,7 +114,7 @@ func (v *Voucher) SetBandwidthLimitMB(limit int) {
 }
 
 // SetExpireInHours sets the `Expire Number` and `Expire Unit` for the voucher.
-func (v *Voucher) SetExpire(expiration int, unit ExpireUnit) {
+func (v *Voucher) SetExpire(expiration int, unit ExpirationUnit) {
 	v.data.ExpireNumber = expiration
 	v.data.ExpireUnit = int(unit)
 }

@@ -2,10 +2,10 @@ package voucher
 
 type Expiry struct {
 	Amount int
-	Unit   VoucherExpireUnit
+	Unit   ExpireUnit
 }
 
-func NewExpiry(amount int, unit VoucherExpireUnit) Expiry {
+func NewExpiry(amount int, unit ExpireUnit) Expiry {
 	return Expiry{
 		Amount: amount,
 		Unit:   unit,

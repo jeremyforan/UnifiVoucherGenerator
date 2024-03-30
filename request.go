@@ -8,8 +8,8 @@ import (
 
 func (c *Client) requestLogin() error {
 
-	urlLogin := c.Url.String() + "/api/login"
-	urlReferer := c.Url.String() + "/manage/account/login"
+	urlLogin := c.Url.String() + unifiApiLogin
+	urlReferer := c.Url.String() + unifiApiLoginReferer
 
 	req, err := http.NewRequest(http.MethodPost, urlLogin, c.Credentials.HttpPayload())
 	if err != nil {

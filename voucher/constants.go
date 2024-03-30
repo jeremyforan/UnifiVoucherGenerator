@@ -1,25 +1,21 @@
 package voucher
 
-// voucherExpireUnit is the unit of time that the voucher will expire in
-type VoucherExpireUnit int
+// ExpireUnit is the unit of time that the voucher will expire in
+type ExpireUnit int
+
+// UsageType is the type of voucher that will be created. There is single, multi and unlimited use.
+type UsageType int
 
 const (
-	vMinutes VoucherExpireUnit = 1
-	vHours   VoucherExpireUnit = 60
-	vDays    VoucherExpireUnit = 1440
-)
+	vSingleUse UsageType = 1
+	vUnlimited UsageType = 0
+	//	vMultiUse is set in constructor
 
-type VoucherUsageType int
+	vMinutes ExpireUnit = 1
+	vHours   ExpireUnit = 60
+	vDays    ExpireUnit = 1440
 
-const (
-	vSingleUse VoucherUsageType = 1
-	vUnlimited VoucherUsageType = 0
-
-	//	vMultiUse is set during constructor
-)
-
-const (
 	createVoucher string = "create-voucher"
-)
 
-const vMbps = 1000
+	vMbps = 1000
+)
