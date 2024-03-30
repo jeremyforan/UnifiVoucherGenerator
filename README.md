@@ -1,13 +1,11 @@
 
 # UniFi Network Application - Go Voucher Generator
 
-Origin Story: I recently deployed Ubiquiti access points in my home.I wanted to host a Guest Wi-Fi that was open and easy to join. However I didn't wanted to prevent people not visiting my home from using my internet. I created a button that, when pressed prints a small voucher code.
+**Origin Story**: After setting up Ubiquiti access points at my place, I aimed to offer straightforward Guest Wi-Fi. I didn't want to use a PSK. However, I also needed to ensure that only people inside my home could use it, avoiding external access. To solve this, I introduced a button that generates a small voucher code upon being pressed.
 
 The is an open-source Golang library designed to interface with the UniFi Network Application dashboard, facilitating the automated generation and fetching of new vouchers for WiFi hotspot landing pages.
 
 By enabling the programmatic generation of vouchers, this library broadens the scope for creating better guest Wi-Fi experiences.
-
-
 
 ## Features
 
@@ -28,15 +26,49 @@ By enabling the programmatic generation of vouchers, this library broadens the s
 
 
 ## Usage/Examples
+A basic example of the library creating a basic voucher.
 
-```javascript
-import Component from 'my-project'
+```go
+package main
 
-function App() {
-  return <Component />
+import (
+	"fmt"
+	"github.com/jeremyforan/UnifiVoucherGenerator"
+	"github.com/jeremyforan/UnifiVoucherGenerator/voucher"
+	"log/slog"
+	"net/url"
+)
+
+func main() {
+
+	// URL of the Unifi controller.
+	baseUrl, err := url.Parse("https://127.0.0.1:8443")
+	if err != nil {
+		panic(err)
+	}
+
+	// Create a new client with the username, password, and URL of the Unifi controller.
+	client := UnifiVoucherGenerator.NewClient("user@email.com", "p455w0rd", baseUrl)
+
+	// Login to the Unifi controller.
+	err = client.Login()
+	if err != nil {
+		slog.Info("Failed to login to Unifi controller")
+		panic(err)
+	}
+
+	// Create a new voucher with default settings.
+	v := voucher.NewDefaultVoucher()
+
+	// Add the Voucher to the Unifi controller.
+	err = client.AddVoucher(v)
+	if err != nil {
+		slog.Error("unable to add voucher")
+	}
+
+	fmt.Println(v.AccessCode())
 }
 ```
-
 
 ## Running Tests
 
