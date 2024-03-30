@@ -4,7 +4,7 @@ import "testing"
 
 func TestVoucherCode(t *testing.T) {
 	code := "1234567890"
-	vc, err := NewVoucherFromString(code)
+	vc, err := NewAccessCodeFromString(code)
 	if err != nil {
 		t.Errorf("Expected no error, got %s", err)
 	}

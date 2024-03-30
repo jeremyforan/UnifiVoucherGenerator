@@ -70,14 +70,34 @@ func (v *Voucher) HttpPayload() *strings.Reader {
 	return v.data.HttpPayload()
 }
 
+// AccessCode returns the AccessCode for the voucher. This is the 10-digit code that Guest can use to access the network.
 func (v *Voucher) AccessCode() AccessCode {
 	return v.AC
 }
 
+// todo: move and maybe rename this function.
+
+// PublishedSuccesfully sets the voucher as published.
 func (v *Voucher) PublishedSuccesfully() {
 	v.published = true
 }
 
-//todo: add download limit
-//todo: add upload limit
-//todo: add bandwidth limit
+// Published returns true if the voucher has been published and available on the UniFi Network Application.
+func (v *Voucher) Published() bool {
+	return v.published
+}
+
+// SetDownloadLimitMbps sets the `Download Limit` in Mbps. If not set, the default is unlimited.
+func (v *Voucher) SetDownloadLimitMbps(limit int) {
+	v.data.Down = limit
+}
+
+// SetUploadLimitMbps sets the `Upload Limit` in Mbps. If not set, the default is unlimited.
+func (v *Voucher) SetUploadLimitMbps(limit int) {
+	v.data.Up = limit
+}
+
+// SetBandwidthLimitMB sets the `Data Limit` in MB. If not set, the default is unlimited.
+func (v *Voucher) SetBandwidthLimitMB(limit int) {
+	v.data.Bytes = limit
+}

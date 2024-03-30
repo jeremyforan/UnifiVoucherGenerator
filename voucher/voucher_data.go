@@ -1,7 +1,7 @@
 package voucher
 
 import (
-	"fmt"
+	"encoding/json"
 	"log/slog"
 	"strings"
 )
@@ -16,14 +16,23 @@ type Data struct {
 	ExpireNumber     int    `json:"expire_number"`
 	ExpireUnit       int    `json:"expire_unit"`
 	Cmd              string `json:"cmd"`
-	Up               int    `json:"up"`
-	Down             int    `json:"down"`
-	Bytes            int    `json:"bytes"`
+	Up               int    `json:"up,omitempty"`
+	Down             int    `json:"down,omitempty"`
+	Bytes            int    `json:"bytes,omitempty"`
 }
 
 // String returns the NewVoucherRequestPayload struct as a string.
+//func (v *Data) String() string {
+//	return fmt.Sprintf(`{"quota":%d,"note":"%s","n":%d,"expire_number":%d,"expire_unit":%d,"cmd":"%s"}`, v.Quota, v.Note, v.NumberOfVouchers, v.ExpireNumber, v.ExpireUnit, v.Cmd)
+//}
+
 func (v *Data) String() string {
-	return fmt.Sprintf(`{"quota":%d,"note":"%s","n":%d,"expire_number":%d,"expire_unit":%d,"cmd":"%s"}`, v.Quota, v.Note, v.NumberOfVouchers, v.ExpireNumber, v.ExpireUnit, v.Cmd)
+	bytes, err := json.Marshal(v)
+	if err != nil {
+		slog.Error("Error marshaling to JSON", "error", err)
+		return ""
+	}
+	return string(bytes)
 }
 
 // HttpPayload returns the NewVoucherRequestPayload struct as a strings.Reader to be used in
