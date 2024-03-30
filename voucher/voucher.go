@@ -36,6 +36,7 @@ func NewSingleUseVoucher() Voucher {
 	v := blankVoucher()
 	v.data = Data{
 		Quota: int(vSingleUse),
+		Cmd:   string(createVoucher),
 	}
 	return v
 }
@@ -45,6 +46,7 @@ func NewMultiUseVoucher(quota int) Voucher {
 	v := blankVoucher()
 	v.data = Data{
 		Quota: quota,
+		Cmd:   string(createVoucher),
 	}
 	return v
 }
@@ -54,6 +56,7 @@ func NewUnlimitedUseVoucher() Voucher {
 	v := blankVoucher()
 	v.data = Data{
 		Quota: int(vUnlimited),
+		Cmd:   string(createVoucher),
 	}
 	return v
 }

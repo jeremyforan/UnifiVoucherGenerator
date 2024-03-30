@@ -15,13 +15,13 @@ import (
 type Client struct {
 	Credentials credentials.Credentials
 	browser     *http.Client
-	Url         url.URL
+	Url         *url.URL
 	token       string
 	voucher.Voucher
 }
 
 // NewClient creates a new Client struct to interact with the Unifi controller
-func NewClient(credentials credentials.Credentials, url url.URL) *Client {
+func NewClient(credentials credentials.Credentials, url *url.URL) *Client {
 	jar, _ := cookiejar.New(nil)
 	return &Client{
 		Credentials: credentials,

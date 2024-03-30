@@ -11,11 +11,3 @@ const (
 	unifiApiVouchers       = "/api/s/default/stat/voucher"
 	unifiApiVoucherReferer = "/manage/default/hotspot/vouchers"
 )
-
-//todo: add Days, Hours, Minutes for voucher request
-
-type voucherCmd string
-
-const (
-	createVoucher voucherCmd = "create-voucher"
-)

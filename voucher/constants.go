@@ -17,3 +17,9 @@ const (
 
 	//	vMultiUse is set during constructor
 )
+
+type voucherCmd string
+
+const (
+	createVoucher voucherCmd = "create-voucher"
+)

@@ -77,7 +77,9 @@ func (c *Client) requestAddVoucher() error {
 	urlVoucher := c.Url.String() + unifiApiCreateVoucher
 	urlVoucherReferer := c.Url.String() + unifiApiVoucherReferer
 
-	req, err := http.NewRequest(http.MethodPost, urlVoucher, c.Voucher.HttpPayload())
+	payload := c.Voucher.HttpPayload()
+
+	req, err := http.NewRequest(http.MethodPost, urlVoucher, payload)
 	if err != nil {
 		slog.Error("error creating add voucher request", "error", err)
 		return err
