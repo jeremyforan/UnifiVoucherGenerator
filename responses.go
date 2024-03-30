@@ -2,6 +2,8 @@ package UnifiVoucherGenerator
 
 import "encoding/json"
 
+//todo: add logging
+
 type Meta struct {
 	Rc string `json:"rc"` // Maps the "rc" field to check if it's "ok"
 }
@@ -19,6 +21,25 @@ type RequestNewVoucherResponse struct {
 		CreateTime int `json:"create_time"`
 	} `json:"data"`
 }
+
+// UnifiVoucher Define struct for each item in the data array
+type UnifiVoucher struct {
+	Duration      int    `json:"duration"`
+	QosOverwrite  bool   `json:"qos_overwrite"`
+	Note          string `json:"note"`
+	Code          string `json:"code"`
+	ForHotspot    bool   `json:"for_hotspot"`
+	CreateTime    int64  `json:"create_time"`
+	Quota         int    `json:"quota"`
+	SiteID        string `json:"site_id"`
+	ID            string `json:"_id"`
+	AdminName     string `json:"admin_name"`
+	Used          int    `json:"used"`
+	Status        string `json:"status"`
+	StatusExpires int    `json:"status_expires"`
+}
+
+type UnifiVouchers []UnifiVoucher
 
 func processResponse[T any](body string) (*T, error) {
 	var response T
@@ -49,4 +70,10 @@ func processVoucherListResponse(body string) (UnifiVouchers, error) {
 		return UnifiVouchers{}, err
 	}
 	return t.Data, nil
+}
+
+// VoucherListResponse Define struct for the top-level JSON object
+type VoucherListResponse struct {
+	Meta Meta          `json:"meta"`
+	Data UnifiVouchers `json:"data"`
 }

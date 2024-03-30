@@ -5,6 +5,7 @@ package UnifiVoucherGenerator
 
 const (
 	unifiApiLogin          = "/api/login"
+	unifiApiSelf           = "/api/self"
 	unifiApiLoginReferer   = "/manage/account/login"
 	unifiApiCreateVoucher  = "/api/s/default/cmd/hotspot"
 	unifiApiVouchers       = "/api/s/default/stat/voucher"

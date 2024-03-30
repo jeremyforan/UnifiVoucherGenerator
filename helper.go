@@ -1,6 +1,8 @@
 package UnifiVoucherGenerator
 
 import (
+	"io"
+	"log/slog"
 	"net/http"
 	"time"
 )
@@ -38,4 +40,43 @@ func NoteTimeStamp() string {
 	now := time.Now()           // Get the current date and time
 	layout := "January02152004" // Define the custom layout
 	return now.Format(layout)   // Format the current time according to the layout
+}
+
+func loggedIn(responseBody string) bool {
+	loginResponse, err := processLoginResponse(responseBody)
+	if err != nil {
+		return false
+	}
+
+	if loginResponse.Meta.Rc == "ok" {
+		return true
+	}
+	return false
+}
+
+// makeRequest is a helper function to make a request.go and return the body and cookies
+func (c *Client) makeRequest(req *http.Request) (string, []*http.Cookie, error) {
+	res, err := c.browser.Do(req)
+	if err != nil {
+		return "", nil, err
+	}
+
+	defer func() {
+		err = res.Body.Close()
+		if err != nil {
+			slog.Warn("error closing request.go body", "error", err)
+		}
+	}()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		slog.Error("error reading response body", "error", err)
+		return "", nil, err
+	}
+
+	return string(body), res.Cookies(), nil
+}
+
+func (v RequestNewVoucherResponse) successful() bool {
+	return v.Meta.Rc == "ok"
 }

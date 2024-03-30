@@ -2,110 +2,138 @@ package UnifiVoucherGenerator
 
 import (
 	"fmt"
-	"github.com/jeremyforan/UnifiVoucherGenerator/credentials"
-	"io"
 	"log/slog"
 	"net/http"
-	"net/url"
 )
 
-func requestLogin(c credentials.Credentials, u url.URL) error{
-	req, err := http.NewRequest(http.MethodPost, UnifiVoucherGenerator.unifiApiLogin, c.Credentials.HttpPayload())
+func (c *Client) requestLogin() error {
+
+	urlLogin := c.Url.String() + "/api/login"
+	urlReferer := c.Url.String() + "/manage/account/login"
+
+	req, err := http.NewRequest(http.MethodPost, urlLogin, c.Credentials.HttpPayload())
 	if err != nil {
+		slog.Error("error creating request login request", "error", err)
 		return err
 	}
 
 	// Set headers as per the curl command
-	UnifiVoucherGenerator.addBasicHeaders(req)
+	addBasicHeaders(req)
+	req.Header.Set("Referer", urlReferer)
 
-	req.Header.Set("Referer", UnifiVoucherGenerator.unifiApiLoginReferer)
+	body, cookies, err := c.makeRequest(req)
 
-	body, cookies, err := c.buildRequest(req)
+	if !loggedIn(body) {
+		err = fmt.Errorf("login failed")
+		slog.Error("login failed", "error", err)
+
+		return err
+	}
+
+	// todo: move this to another function
+	f := false
 	for _, cookie := range cookies {
 		if cookie.Name == "csrf_token" {
 			c.token = cookie.Value
+			f = true
 			break
 		}
 	}
 
-	if loggedIn(string(body)) {
-		return nil
-	}
-
-	return fmt.Errorf("login failed")
-}
-
-}
-
-
-
-
-
-
-// buildRequest is a helper function to make a request.go and return the body and cookies
-func (c *Client) buildRequest(req *http.Request) (string, []*http.Cookie, error) {
-	res, err := c.client.Do(req)
-	if err != nil {
-		return "", nil, err
-	}
-
-	defer func() {
-		err := res.Body.Close()
-		if err != nil {
-			slog.Warn("error closing request.go body", "error", err)
-		}
-	}()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		slog.Error("error reading response body", "error", err)
-		return "", nil, err
-	}
-
-	return string(body), res.Cookies(), nil
-}
-
-
-
-func loggedIn(responseBody string) bool {
-	loginResponse, err := UnifiVoucherGenerator.processLoginResponse(string(responseBody))
-	if err != nil {
-		return false
-	}
-
-	if loginResponse.Meta.Rc == "ok" {
-		return true
-	}
-
-	return false
-}
-
-func (c *UnifiVoucherGenerator.Client) GetSelf() error {
-	selfUrl := c.Url + "/api/self"
-
-	req, err := http.NewRequest(http.MethodGet, selfUrl, nil)
-	if err != nil {
+	if !f {
+		err = fmt.Errorf("csrf_token not found")
+		slog.Error("csrf_token not found", "error", err)
 		return err
+	}
+
+	return nil
+}
+
+func (c *Client) requestSelf() (string, error) {
+	urlSelf := c.Url.String() + unifiApiSelf
+	urlSelfReferer := c.Url.String() + unifiApiLoginReferer
+
+	req, err := http.NewRequest(http.MethodGet, urlSelf, nil)
+	if err != nil {
+		slog.Error("error creating get self request", "error", err)
+		return "", err
 	}
 
 	// Set headers as per the curl command
-	UnifiVoucherGenerator.addBasicHeaders(req)
+	addBasicHeaders(req)
 
-	req.Header.Set("Referer", c.Url+"/manage/account/login")
-	req.Header.Set("DNT", "1") // Do Not Track
+	req.Header.Set("Referer", urlSelfReferer)
 	req.Header.Set("X-Csrf-Token", c.token)
 
-	res, err := c.Client.Do(req) // Use the client with a cookie jar
+	body, _, err := c.makeRequest(req)
 	if err != nil {
+		slog.Error("error making request", "error", err)
+		return "", err
+	}
+	return body, nil
+}
+
+func (c *Client) requestAddVoucher() error {
+	urlVoucher := c.Url.String() + unifiApiCreateVoucher
+	urlVoucherReferer := c.Url.String() + unifiApiVoucherReferer
+
+	req, err := http.NewRequest(http.MethodPost, urlVoucher, c.Voucher.HttpPayload())
+	if err != nil {
+		slog.Error("error creating add voucher request", "error", err)
 		return err
 	}
-	defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
+	addBasicHeaders(req)
+	req.Header.Set("Referer", urlVoucherReferer)
+	req.Header.Set("X-Csrf-Token", c.token)
+
+	body, _, err := c.makeRequest(req)
 	if err != nil {
+		slog.Error("error making request", "error", err)
 		return err
 	}
 
-	fmt.Println(string(body))
+	// todo: maybe rename this function
+	nv, err := processNewVoucherRequestResponse(body)
+	if err != nil {
+		slog.Error("error processing new voucher request response", "error", err)
+		return err
+	}
+
+	if !nv.successful() {
+		err = fmt.Errorf("voucher request failed")
+		slog.Error("voucher request failed", "error", err)
+		return err
+	}
 	return nil
+}
+
+func (c *Client) requestFetchPublishedVouchers() (UnifiVouchers, error) {
+	urlFetchVouchers := c.Url.String() + unifiApiVouchers
+	urlFetchVouchersReferer := c.Url.String() + unifiApiVoucherReferer
+
+	req, err := http.NewRequest(http.MethodPost, urlFetchVouchers, nil)
+	if err != nil {
+		slog.Error("error creating fetch published vouchers request", "error", err)
+		return nil, err
+	}
+
+	// Set headers as per the curl command
+	addBasicHeaders(req)
+
+	req.Header.Set("Referer", urlFetchVouchersReferer)
+	req.Header.Set("X-Csrf-Token", c.token)
+
+	body, _, err := c.makeRequest(req)
+	if err != nil {
+		slog.Error("error making request", "error", err)
+		return nil, err
+	}
+
+	vouchers, err := processVoucherListResponse(body)
+	if err != nil {
+		return nil, err
+	}
+
+	return vouchers, nil
 }

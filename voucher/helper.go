@@ -1,6 +1,7 @@
 package voucher
 
 import (
+	uuid "github.com/satori/go.uuid"
 	"log/slog"
 	"strconv"
 )
@@ -18,4 +19,11 @@ func convertStringToIntArray(s string) ([]int, []int) {
 		buffer[i] = c
 	}
 	return buffer[:5], buffer[5:]
+}
+
+func blankVoucher() Voucher {
+	return Voucher{
+		Id:        uuid.NewV4().String(),
+		published: false,
+	}
 }

@@ -3,6 +3,7 @@ package UnifiVoucherGenerator
 import (
 	"github.com/jeremyforan/UnifiVoucherGenerator/credentials"
 	"github.com/jeremyforan/UnifiVoucherGenerator/voucher"
+	"log/slog"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -13,9 +14,10 @@ import (
 // Client is the primary struct that interacts with the Unifi controller using http requests
 type Client struct {
 	Credentials credentials.Credentials
-	client      *http.Client
+	browser     *http.Client
 	Url         url.URL
 	token       string
+	voucher.Voucher
 }
 
 // NewClient creates a new Client struct to interact with the Unifi controller
@@ -23,7 +25,7 @@ func NewClient(credentials credentials.Credentials, url url.URL) *Client {
 	jar, _ := cookiejar.New(nil)
 	return &Client{
 		Credentials: credentials,
-		client: &http.Client{
+		browser: &http.Client{
 			Jar: jar,
 		},
 		Url: url,
@@ -31,10 +33,39 @@ func NewClient(credentials credentials.Credentials, url url.URL) *Client {
 }
 
 func (c *Client) Login() error {
-
+	err := c.requestLogin()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (c *Client) AddVoucher(v voucher.Voucher) error {
+	c.Voucher = v
+	err := c.requestAddVoucher()
+	if err != nil {
+		return err
+	}
+	c.Voucher.PublishedSuccesfully()
+
+	vouchers, err := c.FetchVouchers()
+	if err != nil {
+		slog.Error("error fetching vouchers from Unifi", "error", err)
+		return err
+	}
+
+	vUnifi, err := vouchers.getVoucherByID(c.Voucher.Id)
+	if err != nil {
+		slog.Error("error getting voucher from Unifi", "error", err)
+		return err
+	}
+
+	code, err := voucher.NewVoucherFromString(vUnifi.Code)
+	if err != nil {
+		slog.Error("error creating voucher code from string", "error", err)
+		return err
+	}
+
+	c.Voucher.Code = code
 	return nil
 }

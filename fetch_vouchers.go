@@ -1,34 +1,10 @@
 package UnifiVoucherGenerator
 
 import (
-	"github.com/jeremyforan/UnifiVoucherGenerator/voucher"
+	"errors"
+	"log/slog"
 	"net/http"
 )
-
-// VoucherListResponse Define struct for the top-level JSON object
-type VoucherListResponse struct {
-	Meta Meta          `json:"meta"`
-	Data UnifiVouchers `json:"data"`
-}
-
-// UnifiVoucher Define struct for each item in the data array
-type UnifiVoucher struct {
-	Duration      int    `json:"duration"`
-	QosOverwrite  bool   `json:"qos_overwrite"`
-	Note          string `json:"note"`
-	Code          string `json:"code"`
-	ForHotspot    bool   `json:"for_hotspot"`
-	CreateTime    int64  `json:"create_time"`
-	Quota         int    `json:"quota"`
-	SiteID        string `json:"site_id"`
-	ID            string `json:"_id"`
-	AdminName     string `json:"admin_name"`
-	Used          int    `json:"used"`
-	Status        string `json:"status"`
-	StatusExpires int    `json:"status_expires"`
-}
-
-type UnifiVouchers []UnifiVoucher
 
 func (c *Client) FetchVouchers() (UnifiVouchers, error) {
 
@@ -43,7 +19,7 @@ func (c *Client) FetchVouchers() (UnifiVouchers, error) {
 	req.Header.Set("Referer", unifiApiVoucherReferer)
 	req.Header.Set("X-Csrf-Token", c.token)
 
-	body, _, err := c.buildRequest(req)
+	body, _, err := c.makeRequest(req)
 
 	vouchers, err := processVoucherListResponse(body)
 	if err != nil {
@@ -53,27 +29,16 @@ func (c *Client) FetchVouchers() (UnifiVouchers, error) {
 	return vouchers, nil
 }
 
-func (v UnifiVouchers) GetLatestVoucher() UnifiVoucher {
-	latestTS := int64(0)
-	newestVoucher := UnifiVoucher{}
+func (v UnifiVouchers) getVoucherByID(id string) (UnifiVoucher, error) {
 
-	for _, voucher := range v {
-		if voucher.Status == "VALID_MULTI" {
-			if voucher.CreateTime > latestTS {
-				latestTS = voucher.CreateTime
-				newestVoucher = voucher
+	for _, vouch := range v {
+		if vouch.Status == "VALID_MULTI" {
+			if vouch.ID == id {
+				return vouch, nil
 			}
 		}
 	}
-
-	return newestVoucher
-}
-
-func (v UnifiVoucher) GetVoucherByCode() (voucher.Code, error) {
-	c, err := voucher.NewVoucherFromString(v.Code)
-	if err != nil {
-		return voucher.Code{}, err
-	}
-	return c, nil
-
+	err := errors.New("voucher not found")
+	slog.Error("voucher not found", "error", err)
+	return UnifiVoucher{}, err
 }

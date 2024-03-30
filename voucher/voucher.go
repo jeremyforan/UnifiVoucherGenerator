@@ -2,14 +2,16 @@ package voucher
 
 import (
 	"github.com/satori/go.uuid"
+	"strings"
 )
 
 //todo: I think this should tweak the names a little bit.
 
 // Voucher is a struct that holds the information needed to create a new voucher.
 type Voucher struct {
-	Id   string
-	data Data
+	Id        string
+	published bool
+	data      Data
 	Code
 }
 
@@ -17,7 +19,8 @@ type Voucher struct {
 func NewDefaultVoucher() Voucher {
 	id := uuid.NewV4().String()
 	return Voucher{
-		Id: id,
+		Id:        id,
+		published: false,
 		data: Data{
 			Note:             id,
 			Quota:            1,
@@ -30,38 +33,43 @@ func NewDefaultVoucher() Voucher {
 
 // NewSingleUseVoucher creates a new Single Use Voucher.
 func NewSingleUseVoucher() Voucher {
-	return Voucher{
-		Id: uuid.NewV4().String(),
-		data: Data{
-			Quota: int(vSingleUse),
-		},
+	v := blankVoucher()
+	v.data = Data{
+		Quota: int(vSingleUse),
 	}
+	return v
 }
 
 // NewMultiUseVoucher creates a new Multi Use Voucher.
 func NewMultiUseVoucher(quota int) Voucher {
-	return Voucher{
-		Id: uuid.NewV4().String(),
-		data: Data{
-			Quota: quota,
-		},
+	v := blankVoucher()
+	v.data = Data{
+		Quota: quota,
 	}
+	return v
 }
 
 // NewUnlimitedUseVoucher creates a new Unlimited use Voucher.
 func NewUnlimitedUseVoucher() Voucher {
-	return Voucher{
-		Id: uuid.NewV4().String(),
-		data: Data{
-			Quota: int(vUnlimited),
-		},
+	v := blankVoucher()
+	v.data = Data{
+		Quota: int(vUnlimited),
 	}
+	return v
 }
 
 func (v *Voucher) String() string {
 	return v.data.String()
 }
 
+func (v *Voucher) HttpPayload() *strings.Reader {
+	return v.data.HttpPayload()
+}
+
 func (v *Voucher) AccessCode() Code {
 	return v.Code
+}
+
+func (v *Voucher) PublishedSuccesfully() {
+	v.published = true
 }
