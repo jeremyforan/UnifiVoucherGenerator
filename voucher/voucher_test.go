@@ -26,7 +26,7 @@ func TestNewDefaultVoucher(t *testing.T) {
 		t.Errorf("NewDefaultVoucher expire unit is not set to Hours")
 	}
 
-	v.SetBandwidthLimitMB(6)
+	v.SetDataLimitMB(6)
 	v.SetDownloadLimitMbps(8)
 	v.SetUploadLimitMbps(7)
 	v.SetExpire(25, Hours)
@@ -54,7 +54,7 @@ func TestNewSingleUseVoucher(t *testing.T) {
 		t.Errorf("NewSingleUseVoucher did not set Quota to single use")
 	}
 
-	v.SetBandwidthLimitMB(6)
+	v.SetDataLimitMB(6)
 	v.SetDownloadLimitMbps(8)
 	v.SetUploadLimitMbps(7)
 	v.SetExpire(25, Hours)
@@ -83,7 +83,7 @@ func TestNewMultiUseVoucher(t *testing.T) {
 		t.Errorf("NewMultiUseVoucher did not set the correct quota. Got %d, want %d", v.data.Quota, quota)
 	}
 
-	v.SetBandwidthLimitMB(6)
+	v.SetDataLimitMB(6)
 	v.SetDownloadLimitMbps(8)
 	v.SetUploadLimitMbps(7)
 	v.SetExpire(25, Hours)
@@ -111,7 +111,7 @@ func TestNewUnlimitedUseVoucher(t *testing.T) {
 		t.Errorf("NewUnlimitedUseVoucher did not set Quota to unlimited")
 	}
 
-	v.SetBandwidthLimitMB(6)
+	v.SetDataLimitMB(6)
 	v.SetDownloadLimitMbps(8)
 	v.SetUploadLimitMbps(7)
 	v.SetExpire(25, Hours)

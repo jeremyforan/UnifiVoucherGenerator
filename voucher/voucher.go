@@ -105,8 +105,8 @@ func (v *Voucher) SetUploadLimitMbps(limit int) {
 	v.data.Up = limit * vMbps
 }
 
-// SetBandwidthLimitMB sets the `Data Limit` in MB. If not set, the default is unlimited.
-func (v *Voucher) SetBandwidthLimitMB(limit int) {
+// SetDataLimitMB sets the `Data Limit` in MB. If not set, the default is unlimited.
+func (v *Voucher) SetDataLimitMB(limit int) {
 	v.data.Bytes = fmt.Sprintf("%d", limit)
 }
 

@@ -19,7 +19,7 @@ By enabling the programmatic generation of vouchers, this library broadens the s
 
 ## Demo
 
-
+![Printing the Voucher](https://jeremyforan-github-public-assets.s3.ca-central-1.amazonaws.com/output_voucher.gif)
 
 
 ## Documentation
