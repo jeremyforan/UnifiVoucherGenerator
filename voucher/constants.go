@@ -11,9 +11,9 @@ const (
 	vUnlimited UsageType = 0
 	//	vMultiUse is set in constructor
 
-	vMinutes ExpireUnit = 1
-	vHours   ExpireUnit = 60
-	vDays    ExpireUnit = 1440
+	Minutes ExpireUnit = 1
+	Hours   ExpireUnit = 60
+	Days    ExpireUnit = 1440
 
 	createVoucher string = "create-voucher"
 

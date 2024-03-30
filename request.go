@@ -7,9 +7,7 @@ import (
 )
 
 func (c *Client) requestLogin() error {
-
-	urlLogin := c.Url.String() + unifiApiLogin
-	urlReferer := c.Url.String() + unifiApiLoginReferer
+	urlLogin, urlReferer := c.loginUrls()
 
 	req, err := http.NewRequest(http.MethodPost, urlLogin, c.Credentials.HttpPayload())
 	if err != nil {
@@ -50,8 +48,7 @@ func (c *Client) requestLogin() error {
 }
 
 func (c *Client) requestSelf() (string, error) {
-	urlSelf := c.Url.String() + unifiApiSelf
-	urlSelfReferer := c.Url.String() + unifiApiLoginReferer
+	urlSelf, urlSelfReferer := c.loginUrls()
 
 	req, err := http.NewRequest(http.MethodGet, urlSelf, nil)
 	if err != nil {
@@ -74,8 +71,7 @@ func (c *Client) requestSelf() (string, error) {
 }
 
 func (c *Client) requestAddVoucher() error {
-	urlVoucher := c.Url.String() + unifiApiCreateVoucher
-	urlVoucherReferer := c.Url.String() + unifiApiVoucherReferer
+	urlVoucher, urlVoucherReferer := c.addVoucherUrls()
 
 	payload := c.Voucher.HttpPayload()
 
@@ -84,6 +80,8 @@ func (c *Client) requestAddVoucher() error {
 		slog.Error("error creating add voucher request", "error", err)
 		return err
 	}
+
+	//TODO: maybe remove the set header for the CSRF header, or update the add basic headers to include the CSRF token
 
 	addBasicHeaders(req)
 	req.Header.Set("Referer", urlVoucherReferer)
@@ -111,8 +109,7 @@ func (c *Client) requestAddVoucher() error {
 }
 
 func (c *Client) requestFetchPublishedVouchers() (UnifiVouchers, error) {
-	urlFetchVouchers := c.Url.String() + unifiApiVouchers
-	urlFetchVouchersReferer := c.Url.String() + unifiApiVoucherReferer
+	urlFetchVouchers, urlFetchVouchersReferer := c.fetchVouchersUrl()
 
 	req, err := http.NewRequest(http.MethodPost, urlFetchVouchers, nil)
 	if err != nil {

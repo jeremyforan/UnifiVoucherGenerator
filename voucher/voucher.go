@@ -3,6 +3,7 @@ package voucher
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/satori/go.uuid"
 	"log/slog"
 )
@@ -27,8 +28,8 @@ func NewDefaultVoucher() *Voucher {
 			Note:             id,
 			Quota:            1,
 			NumberOfVouchers: 1,
-			ExpireNumber:     24,
-			ExpireUnit:       int(vHours),
+			ExpireNumber:     "24",
+			ExpireUnit:       int(Hours),
 			Cmd:              createVoucher,
 		},
 	}
@@ -37,40 +38,36 @@ func NewDefaultVoucher() *Voucher {
 // NewSingleUseVoucher creates a new Single Use Voucher.
 func NewSingleUseVoucher() *Voucher {
 	v := blankVoucher()
-	v.data = Data{
-		Note:  v.Id,
-		Quota: int(vSingleUse),
-		Cmd:   createVoucher,
-	}
+
+	v.data.Quota = int(vSingleUse)
+
 	return &v
 }
 
 // NewMultiUseVoucher creates a new Multi Use Voucher.
 func NewMultiUseVoucher(quota int) *Voucher {
 	v := blankVoucher()
-	v.data = Data{
-		Note:  v.Id,
-		Quota: quota,
-		Cmd:   createVoucher,
-	}
+
+	v.data.Quota = quota
+
 	return &v
 }
 
 // NewUnlimitedUseVoucher creates a new Unlimited use Voucher.
 func NewUnlimitedUseVoucher() *Voucher {
 	v := blankVoucher()
-	v.data = Data{
-		Note:  v.Id,
-		Quota: int(vUnlimited),
-		Cmd:   createVoucher,
-	}
+
+	v.data.Quota = int(vUnlimited)
+
 	return &v
 }
 
+// String Stringer interface implementation
 func (v *Voucher) String() string {
 	return v.data.String()
 }
 
+// HttpPayload returns the Voucher struct as a bytes.Reader to be used in as a http request body.
 func (v *Voucher) HttpPayload() *bytes.Reader {
 	marshalled, err := json.Marshal(v.data)
 	if err != nil {
@@ -110,11 +107,23 @@ func (v *Voucher) SetUploadLimitMbps(limit int) {
 
 // SetBandwidthLimitMB sets the `Data Limit` in MB. If not set, the default is unlimited.
 func (v *Voucher) SetBandwidthLimitMB(limit int) {
-	v.data.Bytes = limit
+	v.data.Bytes = fmt.Sprintf("%d", limit)
 }
 
-// SetExpireInHours sets the `Expire Number` and `Expire Unit` for the voucher.
-func (v *Voucher) SetExpire(expiration int, unit ExpirationUnit) {
-	v.data.ExpireNumber = expiration
+// SetExpire sets the `Expire Number` and `Expire Unit` for the voucher.
+func (v *Voucher) SetExpire(expiration int, unit ExpireUnit) {
+	v.data.ExpireNumber = fmt.Sprintf("%d", expiration)
 	v.data.ExpireUnit = int(unit)
 }
+
+// SetId sets the `Note` for the voucher.
+func (v *Voucher) SetId(id string) {
+	v.data.Note = id
+}
+
+// TODO: The publishing of vouchers doesnt incorporate the number of vouchers to create. The code that
+// would need to be reworked before this can be implemented.
+// SetAmountOfVouchers sets the number of vouchers to create.
+//func (v *Voucher) SetAmountOfVouchers(amount int) {
+//	v.data.NumberOfVouchers = amount
+//}

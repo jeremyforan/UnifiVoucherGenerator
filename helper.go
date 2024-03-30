@@ -4,8 +4,10 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"net/url"
 )
 
+// addBasicHeaders adds the basic headers for the http request.
 func addBasicHeaders(req *http.Request) {
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
@@ -65,4 +67,35 @@ func (c *Client) makeRequest(req *http.Request) (string, []*http.Cookie, error) 
 
 func (v RequestNewVoucherResponse) successful() bool {
 	return v.Meta.Rc == "ok"
+}
+
+// loginUrls returns the urls for the login and referer
+func (c *Client) loginUrls() (string, string) {
+	return c.urlBuilder(unifiApiSelf, unifiApiLoginReferer)
+}
+
+func (c *Client) addVoucherUrls() (string, string) {
+	return c.urlBuilder(unifiApiCreateVoucher, unifiApiVoucherReferer)
+}
+
+func (c *Client) fetchVouchersUrl() (string, string) {
+	return c.urlBuilder(unifiApiVouchers, unifiApiVoucherReferer)
+}
+
+// urlBuilder returns the urls for the endpoint and referer
+func (c *Client) urlBuilder(endpoint string, referer string) (string, string) {
+
+	a, err := url.JoinPath(c.Url.String(), endpoint)
+	if err != nil {
+		slog.Error("error joining url", "error", err)
+		return "", ""
+	}
+
+	b, err := url.JoinPath(c.Url.String(), referer)
+	if err != nil {
+		slog.Error("error joining url", "error", err)
+		return "", ""
+	}
+
+	return a, b
 }

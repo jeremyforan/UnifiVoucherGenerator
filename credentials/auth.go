@@ -28,6 +28,7 @@ func NewCredentials(username string, password string) Credentials {
 
 // String returns the Credentials struct as a string
 func (u Credentials) String() string {
+	//todo: this should be a json.Marshal
 	return fmt.Sprintf(`{"username":"%s","password":"%s","remember":%t,"strict":%t}`, u.Username, u.Password, u.Remember, u.Strict)
 }
 

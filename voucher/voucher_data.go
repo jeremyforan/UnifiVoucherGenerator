@@ -13,12 +13,12 @@ type Data struct {
 	Quota            int    `json:"quota"`
 	Note             string `json:"note"`
 	NumberOfVouchers int    `json:"n"`
-	ExpireNumber     int    `json:"expire_number"`
+	ExpireNumber     string `json:"expire_number"`
 	ExpireUnit       int    `json:"expire_unit"`
 	Cmd              string `json:"cmd"`
 	Up               int    `json:"up,omitempty"`
 	Down             int    `json:"down,omitempty"`
-	Bytes            int    `json:"bytes,omitempty"`
+	Bytes            string `json:"bytes,omitempty"`
 }
 
 // String returns the NewVoucherRequestPayload struct as a string.
@@ -47,7 +47,7 @@ func (v *Data) LogGroup() slog.Value {
 		slog.Int("quota", v.Quota),
 		slog.String("note", v.Note),
 		slog.Int("amount", v.NumberOfVouchers),
-		slog.Int("expire_number", v.ExpireNumber),
+		slog.String("expire_number", v.ExpireNumber),
 		slog.Int("expire_unit", v.ExpireUnit),
 		slog.String("cmd", v.Cmd),
 	)
