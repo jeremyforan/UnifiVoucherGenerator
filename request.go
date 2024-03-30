@@ -39,6 +39,7 @@ func (c *Client) requestLogin() error {
 	}
 
 	if !f {
+		// todo: I dont like this, maybe return the error and log it in the calling function
 		err = fmt.Errorf("csrf_token not found")
 		slog.Error("csrf_token not found", "error", err)
 		return err

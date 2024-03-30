@@ -30,15 +30,19 @@ func addSecurityHeaders(req *http.Request) {
 	req.Header.Add("sec-gpc", "1")
 }
 
+// loggedIn returns true if the login was successful.
 func loggedIn(responseBody string) bool {
 	loginResponse, err := processLoginResponse(responseBody)
 	if err != nil {
+		slog.Error("error processing login response", "error", err)
 		return false
 	}
 
 	if loginResponse.Meta.Rc == "ok" {
 		return true
 	}
+
+	slog.Error("login failed", "response", responseBody)
 	return false
 }
 
@@ -74,10 +78,12 @@ func (c *Client) loginUrls() (string, string) {
 	return c.urlBuilder(unifiApiSelf, unifiApiLoginReferer)
 }
 
+// addVoucherUrls returns the urls for the add voucher and referer
 func (c *Client) addVoucherUrls() (string, string) {
 	return c.urlBuilder(unifiApiCreateVoucher, unifiApiVoucherReferer)
 }
 
+// fetchVouchersUrl returns the urls for the fetch vouchers and referer
 func (c *Client) fetchVouchersUrl() (string, string) {
 	return c.urlBuilder(unifiApiVouchers, unifiApiVoucherReferer)
 }

@@ -10,6 +10,7 @@ import (
 )
 
 // todo: add additional logging
+// todo: add ability to disable logging
 
 // Client is the primary struct that interacts with the Unifi controller using http requests. It holds the credentials, http client, url, and token for the Unifi controller
 // Before using the client, the Login method must be called to authenticate with the Unifi controller. If no error is returned, the client is ready to add vouchers.
