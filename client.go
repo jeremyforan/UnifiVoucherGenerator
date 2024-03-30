@@ -60,12 +60,12 @@ func (c *Client) AddVoucher(v voucher.Voucher) error {
 		return err
 	}
 
-	code, err := voucher.NewVoucherFromString(vUnifi.Code)
+	ac, err := voucher.NewAccessCodeFromString(vUnifi.Code)
 	if err != nil {
 		slog.Error("error creating voucher code from string", "error", err)
 		return err
 	}
 
-	c.Voucher.Code = code
+	c.Voucher.AC = ac
 	return nil
 }

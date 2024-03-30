@@ -12,7 +12,7 @@ type Voucher struct {
 	Id        string
 	published bool
 	data      Data
-	Code
+	AC        AccessCode
 }
 
 // NewDefaultVoucher creates a new Voucher struct to be used to create a new voucher.
@@ -27,6 +27,7 @@ func NewDefaultVoucher() Voucher {
 			NumberOfVouchers: 1,
 			ExpireNumber:     24,
 			ExpireUnit:       int(vHours),
+			Cmd:              createVoucher,
 		},
 	}
 }
@@ -36,7 +37,7 @@ func NewSingleUseVoucher() Voucher {
 	v := blankVoucher()
 	v.data = Data{
 		Quota: int(vSingleUse),
-		Cmd:   string(createVoucher),
+		Cmd:   createVoucher,
 	}
 	return v
 }
@@ -46,7 +47,7 @@ func NewMultiUseVoucher(quota int) Voucher {
 	v := blankVoucher()
 	v.data = Data{
 		Quota: quota,
-		Cmd:   string(createVoucher),
+		Cmd:   createVoucher,
 	}
 	return v
 }
@@ -56,7 +57,7 @@ func NewUnlimitedUseVoucher() Voucher {
 	v := blankVoucher()
 	v.data = Data{
 		Quota: int(vUnlimited),
-		Cmd:   string(createVoucher),
+		Cmd:   createVoucher,
 	}
 	return v
 }
@@ -69,8 +70,8 @@ func (v *Voucher) HttpPayload() *strings.Reader {
 	return v.data.HttpPayload()
 }
 
-func (v *Voucher) AccessCode() Code {
-	return v.Code
+func (v *Voucher) AccessCode() AccessCode {
+	return v.AC
 }
 
 func (v *Voucher) PublishedSuccesfully() {
