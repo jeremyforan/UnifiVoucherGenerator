@@ -57,11 +57,31 @@ func main() {
 
 ## Documentation
 
-### Expiry
+### Usage
+The ID will be 
+
+### Expiration
+
+<img src="expiry_prompt.png" height=400>
+
+You can set the expiry of a voucher using the SetExpire method.
+
+```go
+v := voucher.NewDefaultVoucher()
+
+// Voucher will expire 7 days from the moment a guest enters it into the landing page.
+v.SetExpire(7, voucher.Days)
+
+// Voucher will expire 8 hours from the moment a guest enters it into the landing page.
+v.SetExpire(8, voucher.Hours)
+
+// Voucher will expire 59 minutes from the moment a guest enters it into the landing page.
+v.SetExpire(59, voucher.Minutes)
+```
 
 ### Network Limits
 
-### Usage
+
 
 
 
