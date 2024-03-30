@@ -17,12 +17,15 @@ type Client struct {
 	browser     *http.Client
 	Url         *url.URL
 	token       string
-	voucher.Voucher
+	*voucher.Voucher
 }
 
 // NewClient creates a new Client struct to interact with the Unifi controller
-func NewClient(credentials credentials.Credentials, url *url.URL) *Client {
+func NewClient(username string, password string, url *url.URL) *Client {
+	credentials := credentials.NewCredentials(username, password)
+
 	jar, _ := cookiejar.New(nil)
+
 	return &Client{
 		Credentials: credentials,
 		browser: &http.Client{
@@ -40,7 +43,7 @@ func (c *Client) Login() error {
 	return nil
 }
 
-func (c *Client) AddVoucher(v voucher.Voucher) error {
+func (c *Client) AddVoucher(v *voucher.Voucher) error {
 	c.Voucher = v
 	err := c.requestAddVoucher()
 	if err != nil {

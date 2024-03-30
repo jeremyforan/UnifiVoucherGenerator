@@ -16,9 +16,9 @@ type Voucher struct {
 }
 
 // NewDefaultVoucher creates a new Voucher struct to be used to create a new voucher.
-func NewDefaultVoucher() Voucher {
+func NewDefaultVoucher() *Voucher {
 	id := uuid.NewV4().String()
-	return Voucher{
+	return &Voucher{
 		Id:        id,
 		published: false,
 		data: Data{
@@ -33,33 +33,33 @@ func NewDefaultVoucher() Voucher {
 }
 
 // NewSingleUseVoucher creates a new Single Use Voucher.
-func NewSingleUseVoucher() Voucher {
+func NewSingleUseVoucher() *Voucher {
 	v := blankVoucher()
 	v.data = Data{
 		Quota: int(vSingleUse),
 		Cmd:   createVoucher,
 	}
-	return v
+	return &v
 }
 
 // NewMultiUseVoucher creates a new Multi Use Voucher.
-func NewMultiUseVoucher(quota int) Voucher {
+func NewMultiUseVoucher(quota int) *Voucher {
 	v := blankVoucher()
 	v.data = Data{
 		Quota: quota,
 		Cmd:   createVoucher,
 	}
-	return v
+	return &v
 }
 
 // NewUnlimitedUseVoucher creates a new Unlimited use Voucher.
-func NewUnlimitedUseVoucher() Voucher {
+func NewUnlimitedUseVoucher() *Voucher {
 	v := blankVoucher()
 	v.data = Data{
 		Quota: int(vUnlimited),
 		Cmd:   createVoucher,
 	}
-	return v
+	return &v
 }
 
 func (v *Voucher) String() string {
@@ -77,3 +77,7 @@ func (v *Voucher) AccessCode() AccessCode {
 func (v *Voucher) PublishedSuccesfully() {
 	v.published = true
 }
+
+//todo: add download limit
+//todo: add upload limit
+//todo: add bandwidth limit

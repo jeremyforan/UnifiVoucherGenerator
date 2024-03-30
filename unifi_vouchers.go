@@ -32,10 +32,11 @@ func (c *Client) FetchVouchers() (UnifiVouchers, error) {
 }
 
 func (v UnifiVouchers) getVoucherByID(id string) (UnifiVoucher, error) {
-
+	r := UnifiVoucher{}
 	for _, vouch := range v {
 		if vouch.Note == id {
-			return vouch, nil
+			r = vouch
+			return r, nil
 		}
 	}
 
