@@ -45,6 +45,7 @@ func (c *Client) Login() error {
 
 func (c *Client) AddVoucher(v *voucher.Voucher) error {
 	c.Voucher = v
+
 	err := c.requestAddVoucher()
 	if err != nil {
 		return err

@@ -11,3 +11,11 @@ const (
 	unifiApiVouchers       = "/api/s/default/stat/voucher"
 	unifiApiVoucherReferer = "/manage/default/hotspot/vouchers"
 )
+
+type ExpireUnit int
+
+const (
+	Minutes ExpireUnit = 1
+	Hours   ExpireUnit = 60
+	Days    ExpireUnit = 1440
+)

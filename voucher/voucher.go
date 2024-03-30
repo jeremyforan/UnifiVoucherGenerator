@@ -1,8 +1,10 @@
 package voucher
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/satori/go.uuid"
-	"strings"
+	"log/slog"
 )
 
 //todo: I think this should tweak the names a little bit.
@@ -36,6 +38,7 @@ func NewDefaultVoucher() *Voucher {
 func NewSingleUseVoucher() *Voucher {
 	v := blankVoucher()
 	v.data = Data{
+		Note:  v.Id,
 		Quota: int(vSingleUse),
 		Cmd:   createVoucher,
 	}
@@ -46,6 +49,7 @@ func NewSingleUseVoucher() *Voucher {
 func NewMultiUseVoucher(quota int) *Voucher {
 	v := blankVoucher()
 	v.data = Data{
+		Note:  v.Id,
 		Quota: quota,
 		Cmd:   createVoucher,
 	}
@@ -56,6 +60,7 @@ func NewMultiUseVoucher(quota int) *Voucher {
 func NewUnlimitedUseVoucher() *Voucher {
 	v := blankVoucher()
 	v.data = Data{
+		Note:  v.Id,
 		Quota: int(vUnlimited),
 		Cmd:   createVoucher,
 	}
@@ -66,8 +71,14 @@ func (v *Voucher) String() string {
 	return v.data.String()
 }
 
-func (v *Voucher) HttpPayload() *strings.Reader {
-	return v.data.HttpPayload()
+func (v *Voucher) HttpPayload() *bytes.Reader {
+	marshalled, err := json.Marshal(v.data)
+	if err != nil {
+		slog.Error("Error marshaling to JSON", "error", err)
+		return nil
+	}
+
+	return bytes.NewReader(marshalled)
 }
 
 // AccessCode returns the AccessCode for the voucher. This is the 10-digit code that Guest can use to access the network.
@@ -89,15 +100,21 @@ func (v *Voucher) Published() bool {
 
 // SetDownloadLimitMbps sets the `Download Limit` in Mbps. If not set, the default is unlimited.
 func (v *Voucher) SetDownloadLimitMbps(limit int) {
-	v.data.Down = limit
+	v.data.Down = limit * vMbps
 }
 
 // SetUploadLimitMbps sets the `Upload Limit` in Mbps. If not set, the default is unlimited.
 func (v *Voucher) SetUploadLimitMbps(limit int) {
-	v.data.Up = limit
+	v.data.Up = limit * vMbps
 }
 
 // SetBandwidthLimitMB sets the `Data Limit` in MB. If not set, the default is unlimited.
 func (v *Voucher) SetBandwidthLimitMB(limit int) {
 	v.data.Bytes = limit
+}
+
+// SetExpireInHours sets the `Expire Number` and `Expire Unit` for the voucher.
+func (v *Voucher) SetExpire(expiration int, unit ExpireUnit) {
+	v.data.ExpireNumber = expiration
+	v.data.ExpireUnit = int(unit)
 }

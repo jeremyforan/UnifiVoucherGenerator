@@ -21,3 +21,5 @@ const (
 const (
 	createVoucher string = "create-voucher"
 )
+
+const vMbps = 1000
