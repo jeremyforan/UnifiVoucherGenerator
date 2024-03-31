@@ -1,15 +1,25 @@
 
 # UniFi Network Application - Go Voucher Generator
 
-**Origin Story**: After setting up Ubiquiti access points at my place, I aimed to offer straightforward Guest Wi-Fi. I didn't want to use a PSK. However, I also needed to ensure that only people inside my home could use it, avoiding external access. To solve this, I introduced a button that generates a small voucher code upon being pressed.
+### Origin Story 
+After setting up Ubiquiti access points at my place, I aimed to offer straightforward Guest Wi-Fi. I didn't want to use a PSK. However, I also needed to ensure that only people inside my home could use it, avoiding external access. To solve this, I introduced a button that generates a small voucher code upon being pressed.
+
+### Overview
 
 The is an open-source Golang library designed to interface with the UniFi Network Application dashboard, facilitating the automated generation and fetching of new vouchers for WiFi hotspot landing pages.
 
-By enabling the programmatic generation of vouchers, this library broadens the scope for creating better guest Wi-Fi experiences.
+By enabling the programmatic generation of vouchers, this library hopes to broaden the scope for creating better guest Wi-Fi experiences.
 
 ![](demo.gif)
 
-## Usage/Examples
+## Installation
+
+```bash
+go get -u github.com/jeremyforan/UnifiVoucherGenerator
+```
+
+## Usage
+
 A basic example of the library creating a basic voucher.
 
 ```go
@@ -48,21 +58,14 @@ func main() {
 	err = client.AddVoucher(v)
 	if err != nil {
 		slog.Error("unable to add voucher")
+		panic(err)
 	}
 
 	fmt.Println(v.AccessCode())
 }
 ```
 
-
-## Documentation
-
-### Usage
-The ID will be 
-
 ### Expiration
-
-<img src="expiry_prompt.png" height=400>
 
 You can set the expiry of a voucher using the SetExpire method.
 
@@ -81,61 +84,43 @@ v.SetExpire(59, voucher.Minutes)
 
 ### Network Limits
 
+You can set the network usage limits with the following:
 
+```go
+v := voucher.NewDefaultVoucher()
 
+// Set download to 10Mbps and upload to 2Mbps
+v.SetDownloadLimitMbps(10)
+v.SetUploadLimitMbps(2)
 
-
-## Running Tests
-
-To run tests, run the following command
-
-```bash
-  npm run test
+// Set data limit to 100MB
+v.SetDataLimitMB(100)
 ```
 
+## Contributions
 
-## Deployment
+Pull requests are welcome. Feel free to...
 
-To deploy this project run
+- Revise documentation
+- Add new features
+- Fix bugs
+- Suggest improvements
 
-```bash
-  npm run deploy
-```
 
 ## Limitations
 
-
-## Acknowledgements
-
-- [Awesome Readme Templates](https://awesomeopensource.com/project/elangosundar/awesome-README-templates)
-- [Awesome README](https://github.com/matiassingers/awesome-readme)
-- [How to write a Good readme](https://bulldogjob.com/news/449-how-to-write-a-good-readme-for-your-github-project)
-
-
-## Environment Variables
-
-To run this project, you will need to add the following environment variables to your .env file
-
-`API_KEY`
-
-`ANOTHER_API_KEY`
-
-
-## FAQ
-
-#### Question 1
-
-Answer 1
-
-#### Question 2
-
-Answer 2
-
+- This has only been tested on a locally deployed instance of the [Unifi Network Appliance - v8.1.113](https://community.ui.com/releases/UniFi-Network-Application-8-1-113/af46fd38-8afe-4cef-8de1-89636b02b52c) 
+- Using [slog](https://go.dev/blog/slog), which requires Go 1.21
+- Currently this only does a single voucher at a time.
 
 ## Feedback
 
-If you have any feedback, please reach out to us at jeremy.foran@gmail.com
+Pull requests are welcome. Feel free to...
 
+- Revise documentation
+- Add new features
+- Fix bugs
+- Suggest improvements
 
 ## License
 
