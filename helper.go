@@ -17,19 +17,6 @@ func addBasicHeaders(req *http.Request) {
 	req.Header.Set("DNT", "1") // Do Not Track
 }
 
-//todo: may need to be moved
-//req.Header.Set("Origin", unifiApiBaseUrl)
-
-func addSecurityHeaders(req *http.Request) {
-	req.Header.Add("sec-ch-ua", "\"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Brave\";v=\"122\"")
-	req.Header.Add("sec-ch-ua-mobile", "?0")
-	req.Header.Add("sec-ch-ua-platform", "\"macOS\"")
-	req.Header.Add("sec-fetch-dest", "empty")
-	req.Header.Add("sec-fetch-mode", "cors")
-	req.Header.Add("sec-fetch-site", "same-origin")
-	req.Header.Add("sec-gpc", "1")
-}
-
 // loggedIn returns true if the login was successful.
 func loggedIn(responseBody string) bool {
 	loginResponse, err := processLoginResponse(responseBody)
