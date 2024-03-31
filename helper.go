@@ -75,7 +75,7 @@ func (v RequestNewVoucherResponse) successful() bool {
 
 // loginUrls returns the urls for the login and referer
 func (c *Client) loginUrls() (string, string) {
-	return c.urlBuilder(unifiApiSelf, unifiApiLoginReferer)
+	return c.urlBuilder(unifiApiLogin, unifiApiLoginReferer)
 }
 
 // addVoucherUrls returns the urls for the add voucher and referer
