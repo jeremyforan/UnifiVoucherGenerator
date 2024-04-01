@@ -26,7 +26,7 @@ func NewDefaultVoucher() *Voucher {
 		published: false,
 		data: Data{
 			Note:             id,
-			Quota:            1,
+			Quota:            int(vSingleUse),
 			NumberOfVouchers: 1,
 			ExpireNumber:     "24",
 			ExpireUnit:       int(Hours),

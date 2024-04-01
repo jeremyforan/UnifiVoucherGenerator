@@ -65,6 +65,21 @@ func main() {
 }
 ```
 
+### Voucher Types
+
+![](voucher_prompt.png)
+
+```go
+v := voucher.NewDefaultVoucher()
+
+v := voucher.NewSingleUseVoucher()
+
+v := voucher.NewMultiUseVoucher(5)
+
+v := voucher.NewUnlimitedUseVoucher()
+
+```
+
 ### Expiration
 
 You can set the expiry of a voucher using the SetExpire method.
