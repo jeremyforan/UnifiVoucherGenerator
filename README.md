@@ -65,20 +65,48 @@ func main() {
 }
 ```
 
-### Voucher Types
+### Vouchers
+
+The Voucher struct represents the same set of properties , as outlined in the new voucher prompt.
 
 ![](voucher_prompt.png)
 
+There are three types of vouchers:
+
+**Single-use**
+
+```go
+v := voucher.NewSingleUseVoucher()
+```
+
+**Multi-use**
+
+```go
+# 5 use, Multi-use voucher.
+v := voucher.NewMultiUseVoucher(5)
+```
+
+**Unlimited**
+
+```go
+v := voucher.NewUnlimitedUseVoucher()
+```
+
+#### Default Voucher
+
+A default voucher has the following criteria
+
 ```go
 v := voucher.NewDefaultVoucher()
-
-v := voucher.NewSingleUseVoucher()
-
-v := voucher.NewMultiUseVoucher(5)
-
-v := voucher.NewUnlimitedUseVoucher()
-
 ```
+
+| Field        | Value      |
+| ------------ | ---------- |
+| Name         | UUIDv4     |
+| Quota        | Single-use |
+| Data Limit 	  | unlimited   |
+| Download Limit | unlimited   |
+| Upload Limit 	| unlimited   |
 
 ### Expiration
 
