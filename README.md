@@ -104,6 +104,7 @@ v := voucher.NewDefaultVoucher()
 | ------------ | ---------- |
 | Name         | UUIDv4     |
 | Quota        | Single-use |
+| Expiration        | 24 Hours |
 | Data Limit 	  | unlimited   |
 | Download Limit | unlimited   |
 | Upload Limit 	| unlimited   |
