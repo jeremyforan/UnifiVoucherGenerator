@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"strings"
 )
 
 // AccessCodeLength is the length of a voucher code "12345-67890"
@@ -24,13 +25,19 @@ func (v AccessCode) String() string {
 
 // NewAccessCodeFromString creates a new AccessCode struct from a string
 func NewAccessCodeFromString(voucherCode string) (AccessCode, error) {
-	re := regexp.MustCompile(`\d{10}`)
+
+	re := regexp.MustCompile(`^\d{5}-?\d{5}$`)
+	if !re.MatchString(voucherCode) {
+		return AccessCode{}, fmt.Errorf("invalid voucher code")
+	}
+	// Remove dash if present
+	cleanVoucherCode := strings.Replace(voucherCode, "-", "", -1)
 
 	if !re.MatchString(voucherCode) {
 		slog.Error("voucher code is not 10 digits")
 		return AccessCode{}, fmt.Errorf("invalid voucher code")
 	}
-	a, b := convertStringToIntArray(voucherCode)
+	a, b := convertStringToIntArray(cleanVoucherCode)
 
 	return AccessCode{
 		firstSet:  a,
