@@ -49,7 +49,7 @@ func main() {
 	// Login to the Unifi controller.
 	err = client.Login()
 	if err != nil {
-		slog.Info("Failed to login to Unifi controller")
+		slog.Error("Failed to login to Unifi controller")
 		panic(err)
 	}
 
@@ -143,6 +143,42 @@ v.SetUploadLimitMbps(2)
 v.SetDataLimitMB(100)
 ```
 
+### Self-signed certificates and timeouts
+
+Controllers usually serve the dashboard with a self-signed certificate. Supply your own `http.Client` to trust it, or to change the default 30 second request timeout. A cookie jar is added automatically if the client does not have one.
+
+```go
+client := UnifiVoucherGenerator.NewClient("user@email.com", "p455w0rd", baseUrl)
+
+client.SetHTTPClient(&http.Client{
+	Timeout: 10 * time.Second,
+	Transport: &http.Transport{
+		// Only do this for a controller you own on a trusted network.
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	},
+})
+```
+
+### Errors
+
+Errors returned by the client wrap sentinel values, so callers can branch on the cause with `errors.Is`:
+
+```go
+err := client.AddVoucher(v)
+switch {
+case errors.Is(err, UnifiVoucherGenerator.ErrNotLoggedIn):
+	// call client.Login() first
+case errors.Is(err, UnifiVoucherGenerator.ErrVoucherRequestFailed):
+	// the controller rejected the voucher; the error message carries the controller's reason
+}
+```
+
+Available sentinels: `ErrLoginFailed`, `ErrCSRFTokenNotFound`, `ErrNotLoggedIn`, `ErrNilVoucher`, `ErrVoucherRequestFailed`, `ErrVoucherNotFound`.
+
+### Examples
+
+Runnable programs live under [`examples/`](examples): `basic`, `multiuse`, `expiry` and `limits`.
+
 ## Contributions
 
 Pull requests are welcome. Feel free to...
@@ -158,15 +194,8 @@ Pull requests are welcome. Feel free to...
 - This has only been tested on a locally deployed instance of the [Unifi Network Appliance - v8.1.113](https://community.ui.com/releases/UniFi-Network-Application-8-1-113/af46fd38-8afe-4cef-8de1-89636b02b52c) 
 - Using [slog](https://go.dev/blog/slog), which requires Go 1.21
 - Currently this only does a single voucher at a time.
-
-## Feedback
-
-Pull requests are welcome. Feel free to...
-
-- Revise documentation
-- Add new features
-- Fix bugs
-- Suggest improvements
+- Only the legacy controller API paths are used and the site is fixed to `default`. UniFi OS consoles (UDM, Cloud Key Gen2) and multi-site setups are not yet supported.
+- A `Client` is not safe for use from multiple goroutines at once.
 
 ## License
 

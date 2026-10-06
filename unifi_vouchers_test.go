@@ -1,70 +1,31 @@
 package UnifiVoucherGenerator
 
 import (
-	"github.com/jeremyforan/UnifiVoucherGenerator/credentials"
-	"github.com/jeremyforan/UnifiVoucherGenerator/voucher"
-	"net/http"
-	"net/url"
-	"reflect"
+	"errors"
 	"testing"
 )
 
-func TestClient_FetchVouchers(t *testing.T) {
-	type fields struct {
-		Credentials credentials.Credentials
-		browser     *http.Client
-		Url         *url.URL
-		token       string
-		Voucher     *voucher.Voucher
-	}
-	var tests []struct {
-		name    string
-		fields  fields
-		want    UnifiVouchers
-		wantErr bool
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := &Client{
-				Credentials: tt.fields.Credentials,
-				browser:     tt.fields.browser,
-				Url:         tt.fields.Url,
-				token:       tt.fields.token,
-				Voucher:     tt.fields.Voucher,
-			}
-			got, err := c.FetchVouchers()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("FetchVouchers() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FetchVouchers() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestUnifiVouchers_getVoucherByID(t *testing.T) {
-	type args struct {
-		id string
+	list := UnifiVouchers{
+		{Note: "one", Code: "1111122222"},
+		{Note: "two", Code: "3333344444"},
 	}
-	var tests []struct {
-		name    string
-		v       UnifiVouchers
-		args    args
-		want    UnifiVoucher
-		wantErr bool
+
+	got, err := list.getVoucherByID("two")
+	if err != nil {
+		t.Fatal(err)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.v.getVoucherByID(tt.args.id)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getVoucherByID() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getVoucherByID() got = %v, want %v", got, tt.want)
-			}
-		})
+	if got.Code != "3333344444" {
+		t.Errorf("code = %q", got.Code)
+	}
+
+	_, err = list.getVoucherByID("three")
+	if !errors.Is(err, ErrVoucherNotFound) {
+		t.Errorf("error = %v, want ErrVoucherNotFound", err)
+	}
+
+	_, err = UnifiVouchers(nil).getVoucherByID("one")
+	if !errors.Is(err, ErrVoucherNotFound) {
+		t.Errorf("empty list error = %v, want ErrVoucherNotFound", err)
 	}
 }

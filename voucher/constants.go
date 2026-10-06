@@ -18,4 +18,7 @@ const (
 	createVoucher string = "create-voucher"
 
 	vMbps = 1000
+
+	// defaultExpireHours is the expiry applied by every constructor.
+	defaultExpireHours = 24
 )

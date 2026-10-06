@@ -2,13 +2,14 @@ package voucher
 
 import (
 	"fmt"
-	"log/slog"
 	"regexp"
 	"strings"
 )
 
-// AccessCodeLength is the length of a voucher code "12345-67890"
+// AccessCodeLength is the number of digits in a voucher code "12345-67890"
 const AccessCodeLength = 10
+
+var accessCodePattern = regexp.MustCompile(`^\d{5}-?\d{5}$`)
 
 // AccessCode is a struct that represents a voucher code
 type AccessCode struct {
@@ -16,27 +17,38 @@ type AccessCode struct {
 	secondSet []int
 }
 
-//todo: may delete this function as I dont think it is necessary
-
-// String returns a string representation of a voucher code as it appears on the Unifi controller
+// String returns a string representation of a voucher code as it appears on the Unifi
+// controller, for example "12345-67890". The zero AccessCode returns an empty string.
 func (v AccessCode) String() string {
-	return fmt.Sprintf("%d%d%d%d%d-%d%d%d%d%d", v.firstSet[0], v.firstSet[1], v.firstSet[2], v.firstSet[3], v.firstSet[4], v.secondSet[0], v.secondSet[1], v.secondSet[2], v.secondSet[3], v.secondSet[4])
+	if len(v.firstSet) != 5 || len(v.secondSet) != 5 {
+		return ""
+	}
+	var b strings.Builder
+	for _, d := range v.firstSet {
+		fmt.Fprintf(&b, "%d", d)
+	}
+	b.WriteByte('-')
+	for _, d := range v.secondSet {
+		fmt.Fprintf(&b, "%d", d)
+	}
+	return b.String()
 }
 
-// NewAccessCodeFromString creates a new AccessCode struct from a string
+// IsZero reports whether the access code has not been set.
+func (v AccessCode) IsZero() bool {
+	return len(v.firstSet) == 0 && len(v.secondSet) == 0
+}
+
+// NewAccessCodeFromString creates a new AccessCode struct from a string. The code must be
+// ten digits, with or without the dash the controller displays after the fifth digit.
 func NewAccessCodeFromString(voucherCode string) (AccessCode, error) {
-
-	re := regexp.MustCompile(`^\d{5}-?\d{5}$`)
-	if !re.MatchString(voucherCode) {
-		return AccessCode{}, fmt.Errorf("invalid voucher code")
+	voucherCode = strings.TrimSpace(voucherCode)
+	if !accessCodePattern.MatchString(voucherCode) {
+		return AccessCode{}, fmt.Errorf("invalid voucher code: want %d digits", AccessCodeLength)
 	}
-	// Remove dash if present
-	cleanVoucherCode := strings.Replace(voucherCode, "-", "", -1)
 
-	if !re.MatchString(voucherCode) {
-		slog.Error("voucher code is not 10 digits")
-		return AccessCode{}, fmt.Errorf("invalid voucher code")
-	}
+	cleanVoucherCode := strings.ReplaceAll(voucherCode, "-", "")
+
 	a, b := convertStringToIntArray(cleanVoucherCode)
 
 	return AccessCode{

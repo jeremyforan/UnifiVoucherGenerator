@@ -4,23 +4,26 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/satori/go.uuid"
 	"log/slog"
-)
 
-//todo: I think this should tweak the names a little bit.
+	"github.com/google/uuid"
+)
 
 // Voucher is a struct that holds the information needed to create a new voucher.
 type Voucher struct {
+	// Id is the identifier sent to the controller in the voucher's note field. It is used
+	// to find the voucher again after it has been created.
 	Id        string
 	published bool
 	data      Data
-	AC        AccessCode
+	// AC is the access code assigned by the controller. It is populated by Client.AddVoucher.
+	AC AccessCode
 }
 
 // NewDefaultVoucher creates a new Voucher struct to be used to create a new voucher.
+// The default voucher is single use and expires 24 hours after first use.
 func NewDefaultVoucher() *Voucher {
-	id := uuid.NewV4().String()
+	id := uuid.NewString()
 	return &Voucher{
 		Id:        id,
 		published: false,
@@ -28,7 +31,7 @@ func NewDefaultVoucher() *Voucher {
 			Note:             id,
 			Quota:            int(vSingleUse),
 			NumberOfVouchers: 1,
-			ExpireNumber:     "24",
+			ExpireNumber:     fmt.Sprintf("%d", defaultExpireHours),
 			ExpireUnit:       int(Hours),
 			Cmd:              createVoucher,
 		},
@@ -44,7 +47,8 @@ func NewSingleUseVoucher() *Voucher {
 	return &v
 }
 
-// NewMultiUseVoucher creates a new Multi Use Voucher.
+// NewMultiUseVoucher creates a new Multi Use Voucher that can be redeemed quota times.
+// A quota of 0 produces an unlimited use voucher, matching the controller's semantics.
 func NewMultiUseVoucher(quota int) *Voucher {
 	v := blankVoucher()
 
@@ -62,8 +66,11 @@ func NewUnlimitedUseVoucher() *Voucher {
 	return &v
 }
 
-// String Stringer interface implementation
+// String Stringer interface implementation. It is safe to call on a nil Voucher.
 func (v *Voucher) String() string {
+	if v == nil {
+		return ""
+	}
 	return v.data.String()
 }
 
@@ -79,11 +86,10 @@ func (v *Voucher) HttpPayload() *bytes.Reader {
 }
 
 // AccessCode returns the AccessCode for the voucher. This is the 10-digit code that Guest can use to access the network.
+// It is the zero AccessCode until the voucher has been added successfully.
 func (v *Voucher) AccessCode() AccessCode {
 	return v.AC
 }
-
-// todo: move and maybe rename this function.
 
 // PublishedSuccesfully sets the voucher as published.
 func (v *Voucher) PublishedSuccesfully() {
@@ -116,8 +122,10 @@ func (v *Voucher) SetExpire(expiration int, unit ExpireUnit) {
 	v.data.ExpireUnit = int(unit)
 }
 
-// SetId sets the `Note` for the voucher.
+// SetId sets the identifier for the voucher. It is sent to the controller as the voucher's
+// `Note` and is used to look the voucher up after creation, so both are kept in sync.
 func (v *Voucher) SetId(id string) {
+	v.Id = id
 	v.data.Note = id
 }
 

@@ -2,7 +2,6 @@ package UnifiVoucherGenerator
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 )
 
@@ -11,78 +10,42 @@ func (c *Client) requestLogin() error {
 
 	req, err := http.NewRequest(http.MethodPost, urlLogin, c.Credentials.HttpPayload())
 	if err != nil {
-		slog.Error("error creating request login request", "error", err)
-		return err
+		return fmt.Errorf("creating login request: %w", err)
 	}
 
-	// Set headers as per the curl command
 	addBasicHeaders(req)
 	req.Header.Set("Referer", urlReferer)
 
 	body, cookies, err := c.makeRequest(req)
+	if err != nil {
+		return fmt.Errorf("login request: %w", err)
+	}
 
 	if !loggedIn(body) {
-		err = fmt.Errorf("login failed")
-		slog.Error("login failed", "error", err)
-
-		return err
+		return fmt.Errorf("%w: %s", ErrLoginFailed, responseMessage(body))
 	}
 
-	// todo: move this to another function
-	f := false
-	for _, cookie := range cookies {
-		if cookie.Name == "csrf_token" {
-			c.token = cookie.Value
-			f = true
-			break
-		}
+	token, ok := csrfTokenFromCookies(cookies)
+	if !ok {
+		return ErrCSRFTokenNotFound
 	}
-
-	if !f {
-		// todo: I dont like this, maybe return the error and log it in the calling function
-		err = fmt.Errorf("csrf_token not found")
-		slog.Error("csrf_token not found", "error", err)
-		return err
-	}
+	c.token = token
 
 	return nil
-}
-
-func (c *Client) requestSelf() (string, error) {
-	urlSelf, urlSelfReferer := c.loginUrls()
-
-	req, err := http.NewRequest(http.MethodGet, urlSelf, nil)
-	if err != nil {
-		slog.Error("error creating get self request", "error", err)
-		return "", err
-	}
-
-	// Set headers as per the curl command
-	addBasicHeaders(req)
-
-	req.Header.Set("Referer", urlSelfReferer)
-	req.Header.Set("X-Csrf-Token", c.token)
-
-	body, _, err := c.makeRequest(req)
-	if err != nil {
-		slog.Error("error making request", "error", err)
-		return "", err
-	}
-	return body, nil
 }
 
 func (c *Client) requestAddVoucher() error {
 	urlVoucher, urlVoucherReferer := c.addVoucherUrls()
 
 	payload := c.Voucher.HttpPayload()
+	if payload == nil {
+		return fmt.Errorf("encoding voucher payload failed")
+	}
 
 	req, err := http.NewRequest(http.MethodPost, urlVoucher, payload)
 	if err != nil {
-		slog.Error("error creating add voucher request", "error", err)
-		return err
+		return fmt.Errorf("creating add voucher request: %w", err)
 	}
-
-	//TODO: maybe remove the set header for the CSRF header, or update the add basic headers to include the CSRF token
 
 	addBasicHeaders(req)
 	req.Header.Set("Referer", urlVoucherReferer)
@@ -90,21 +53,16 @@ func (c *Client) requestAddVoucher() error {
 
 	body, _, err := c.makeRequest(req)
 	if err != nil {
-		slog.Error("error making request", "error", err)
-		return err
+		return fmt.Errorf("add voucher request: %w", err)
 	}
 
-	// todo: maybe rename this function
 	nv, err := processNewVoucherRequestResponse(body)
 	if err != nil {
-		slog.Error("error processing new voucher request response", "error", err)
-		return err
+		return fmt.Errorf("decoding add voucher response: %w", err)
 	}
 
 	if !nv.successful() {
-		err = fmt.Errorf("voucher request failed")
-		slog.Error("voucher request failed", "error", err)
-		return err
+		return fmt.Errorf("%w: %s", ErrVoucherRequestFailed, responseMessage(body))
 	}
 	return nil
 }
@@ -114,25 +72,21 @@ func (c *Client) requestFetchPublishedVouchers() (UnifiVouchers, error) {
 
 	req, err := http.NewRequest(http.MethodPost, urlFetchVouchers, nil)
 	if err != nil {
-		slog.Error("error creating fetch published vouchers request", "error", err)
-		return nil, err
+		return nil, fmt.Errorf("creating fetch vouchers request: %w", err)
 	}
 
-	// Set headers as per the curl command
 	addBasicHeaders(req)
-
 	req.Header.Set("Referer", urlFetchVouchersReferer)
 	req.Header.Set("X-Csrf-Token", c.token)
 
 	body, _, err := c.makeRequest(req)
 	if err != nil {
-		slog.Error("error making request", "error", err)
-		return nil, err
+		return nil, fmt.Errorf("fetch vouchers request: %w", err)
 	}
 
 	vouchers, err := processVoucherListResponse(body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("decoding fetch vouchers response: %w", err)
 	}
 
 	return vouchers, nil

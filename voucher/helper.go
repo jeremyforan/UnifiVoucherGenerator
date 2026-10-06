@@ -1,29 +1,27 @@
 package voucher
 
 import (
-	uuid "github.com/satori/go.uuid"
-	"log/slog"
-	"strconv"
+	"fmt"
+
+	"github.com/google/uuid"
 )
 
-// convertStringToIntArray helper function to convert a string to an array of integers. This assumes the
-// string has already been validated as a proper voucher.
+// convertStringToIntArray helper function to convert a string of digits to two arrays of
+// integers. This assumes the string has already been validated as a proper voucher code.
 func convertStringToIntArray(s string) ([]int, []int) {
 	buffer := make([]int, len(s))
 	for i := 0; i < len(s); i++ {
-		c, err := strconv.Atoi(string(s[i]))
-		if err != nil {
-			slog.Error("can not convert char to int", "char", string(s[i]), "error", err, "string", s)
+		if s[i] < '0' || s[i] > '9' {
 			return []int{}, []int{}
 		}
-		buffer[i] = c
+		buffer[i] = int(s[i] - '0')
 	}
 	return buffer[:5], buffer[5:]
 }
 
 // blankVoucher helper function to create a blank voucher with a new UUID
 func blankVoucher() Voucher {
-	id := uuid.NewV4().String()
+	id := uuid.NewString()
 
 	d := blankVoucherData()
 
@@ -43,7 +41,7 @@ func blankVoucherData() Data {
 		Note:             "",
 		Quota:            0,
 		NumberOfVouchers: 1,
-		ExpireNumber:     "25",
+		ExpireNumber:     fmt.Sprintf("%d", defaultExpireHours),
 		ExpireUnit:       int(Hours),
 		Cmd:              createVoucher,
 	}

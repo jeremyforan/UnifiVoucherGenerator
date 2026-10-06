@@ -2,7 +2,7 @@ package voucher
 
 import (
 	"bytes"
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 	"io"
 	"log"
 	"testing"
@@ -19,7 +19,7 @@ func TestNewDefaultVoucher(t *testing.T) {
 	if v == nil {
 		t.Errorf("NewDefaultVoucher returned nil")
 	}
-	if v.Id == "" || uuid.FromStringOrNil(v.Id).Version() != 4 {
+	if v.Id == "" || !isUUIDv4(v.Id) {
 		t.Errorf("NewDefaultVoucher did not generate a valid UUID v4")
 	}
 	if v.data.ExpireUnit != int(Hours) {
@@ -138,4 +138,55 @@ func compareReaderToString(r *bytes.Reader, expected string) bool {
 
 	// Directly compare the strings
 	return contentStr == expected
+}
+
+func TestVoucher_NilString(t *testing.T) {
+	var v *Voucher
+	if got := v.String(); got != "" {
+		t.Errorf("nil Voucher String() = %q, want empty", got)
+	}
+}
+
+func TestVoucher_SetIdKeepsIdAndNoteInSync(t *testing.T) {
+	v := NewDefaultVoucher()
+	v.SetId("front-door")
+	if v.Id != "front-door" {
+		t.Errorf("Id = %q, want front-door", v.Id)
+	}
+	if v.data.Note != "front-door" {
+		t.Errorf("Note = %q, want front-door", v.data.Note)
+	}
+}
+
+func TestVoucher_DefaultExpiryIs24Hours(t *testing.T) {
+	for name, v := range map[string]*Voucher{
+		"default":   NewDefaultVoucher(),
+		"single":    NewSingleUseVoucher(),
+		"multi":     NewMultiUseVoucher(3),
+		"unlimited": NewUnlimitedUseVoucher(),
+	} {
+		if v.data.ExpireNumber != "24" || v.data.ExpireUnit != int(Hours) {
+			t.Errorf("%s: expiry = %s unit %d, want 24 hours", name, v.data.ExpireNumber, v.data.ExpireUnit)
+		}
+		if v.data.Note != v.Id {
+			t.Errorf("%s: note %q does not match id %q", name, v.data.Note, v.Id)
+		}
+		if v.Published() {
+			t.Errorf("%s: new voucher should not be published", name)
+		}
+	}
+}
+
+func TestVoucher_DefaultHasNoLimits(t *testing.T) {
+	v := NewDefaultVoucher()
+	v.SetId("fixed")
+	expected := `{"quota":1,"note":"fixed","n":1,"expire_number":"24","expire_unit":60,"cmd":"create-voucher"}`
+	if !compareReaderToString(v.HttpPayload(), expected) {
+		t.Errorf("payload = %s, want %s", v.String(), expected)
+	}
+}
+
+func isUUIDv4(s string) bool {
+	u, err := uuid.Parse(s)
+	return err == nil && u.Version() == 4
 }
