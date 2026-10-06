@@ -1,46 +1,23 @@
 package UnifiVoucherGenerator
 
-import (
-	"errors"
-	"log/slog"
-	"net/http"
-)
+import "fmt"
 
+// FetchVouchers returns every voucher currently known to the controller. Login must have
+// been called first.
 func (c *Client) FetchVouchers() (UnifiVouchers, error) {
-	urlFetchVouchers := c.Url.String() + unifiApiVouchers
-	urlFetchVouchersReferer := c.Url.String() + unifiApiVoucherReferer
-
-	req, err := http.NewRequest(http.MethodPost, urlFetchVouchers, nil)
-	if err != nil {
-		return []UnifiVoucher{}, err
+	if c.token == "" {
+		return nil, ErrNotLoggedIn
 	}
-
-	// Set headers as per the curl command
-	addBasicHeaders(req)
-
-	req.Header.Set("Referer", urlFetchVouchersReferer)
-	req.Header.Set("X-Csrf-Token", c.token)
-
-	body, _, err := c.makeRequest(req)
-
-	vouchers, err := processVoucherListResponse(body)
-	if err != nil {
-		return []UnifiVoucher{}, err
-	}
-
-	return vouchers, nil
+	return c.requestFetchPublishedVouchers()
 }
 
+// getVoucherByID finds the voucher whose note matches id. Vouchers created by this library
+// carry their Voucher.Id in the note field.
 func (v UnifiVouchers) getVoucherByID(id string) (UnifiVoucher, error) {
-	r := UnifiVoucher{}
 	for _, vouch := range v {
 		if vouch.Note == id {
-			r = vouch
-			return r, nil
+			return vouch, nil
 		}
 	}
-
-	err := errors.New("voucher not found")
-	slog.Error("voucher not found", "error", err)
-	return UnifiVoucher{}, err
+	return UnifiVoucher{}, fmt.Errorf("%w: no voucher with note %q", ErrVoucherNotFound, id)
 }

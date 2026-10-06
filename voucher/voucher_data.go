@@ -6,7 +6,8 @@ import (
 	"strings"
 )
 
-//todo: these should be explained in the documentation. Called out by the value they represent.
+// Field names mirror the controller's create-voucher form: quota is the number of uses (0 = unlimited),
+// expire_number/expire_unit give the lifetime (unit is minutes per step), up/down are Kbps and bytes is MB.
 
 // Data is a struct that holds the parameters that can be selected online.
 type Data struct {
@@ -20,11 +21,6 @@ type Data struct {
 	Down             int    `json:"down,omitempty"`
 	Bytes            string `json:"bytes,omitempty"`
 }
-
-// String returns the NewVoucherRequestPayload struct as a string.
-//func (v *Data) String() string {
-//	return fmt.Sprintf(`{"quota":%d,"note":"%s","n":%d,"expire_number":%d,"expire_unit":%d,"cmd":"%s"}`, v.Quota, v.Note, v.NumberOfVouchers, v.ExpireNumber, v.ExpireUnit, v.Cmd)
-//}
 
 func (v *Data) String() string {
 	bytes, err := json.Marshal(v)

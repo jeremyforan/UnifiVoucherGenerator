@@ -1,11 +1,9 @@
 package UnifiVoucherGenerator
 
-//todo: is there a proper way to do this?
-//todo: do I need to consider dashboard versions?
-
+// Paths on the UniFi Network Application. These are the legacy controller
+// paths; the site is currently fixed to "default".
 const (
 	unifiApiLogin          = "/api/login"
-	unifiApiSelf           = "/api/self"
 	unifiApiLoginReferer   = "/manage/account/login"
 	unifiApiCreateVoucher  = "/api/s/default/cmd/hotspot"
 	unifiApiVouchers       = "/api/s/default/stat/voucher"

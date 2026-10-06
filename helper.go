@@ -1,6 +1,7 @@
 package UnifiVoucherGenerator
 
 import (
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -21,19 +22,22 @@ func addBasicHeaders(req *http.Request) {
 func loggedIn(responseBody string) bool {
 	loginResponse, err := processLoginResponse(responseBody)
 	if err != nil {
-		slog.Error("error processing login response", "error", err)
 		return false
 	}
-
-	if loginResponse.Meta.Rc == "ok" {
-		return true
-	}
-
-	slog.Error("login failed", "response", responseBody)
-	return false
+	return loginResponse.Meta.ok()
 }
 
-// makeRequest is a helper function to make a request.go and return the body and cookies
+// csrfTokenFromCookies returns the value of the csrf_token cookie, if present.
+func csrfTokenFromCookies(cookies []*http.Cookie) (string, bool) {
+	for _, cookie := range cookies {
+		if cookie.Name == "csrf_token" && cookie.Value != "" {
+			return cookie.Value, true
+		}
+	}
+	return "", false
+}
+
+// makeRequest is a helper function to make a request and return the body and cookies
 func (c *Client) makeRequest(req *http.Request) (string, []*http.Cookie, error) {
 	res, err := c.browser.Do(req)
 	if err != nil {
@@ -41,16 +45,14 @@ func (c *Client) makeRequest(req *http.Request) (string, []*http.Cookie, error) 
 	}
 
 	defer func() {
-		err = res.Body.Close()
-		if err != nil {
-			slog.Warn("error closing request.go body", "error", err)
+		if cerr := res.Body.Close(); cerr != nil {
+			slog.Warn("error closing response body", "error", cerr)
 		}
 	}()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		slog.Error("error reading response body", "error", err)
-		return "", nil, err
+		return "", nil, fmt.Errorf("reading response body: %w", err)
 	}
 
 	return string(body), res.Cookies(), nil
@@ -77,6 +79,9 @@ func (c *Client) fetchVouchersUrl() (string, string) {
 
 // urlBuilder returns the urls for the endpoint and referer
 func (c *Client) urlBuilder(endpoint string, referer string) (string, string) {
+	if c.Url == nil {
+		return "", ""
+	}
 
 	a, err := url.JoinPath(c.Url.String(), endpoint)
 	if err != nil {

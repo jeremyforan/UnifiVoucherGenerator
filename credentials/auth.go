@@ -1,7 +1,7 @@
 package credentials
 
 import (
-	"fmt"
+	"encoding/json"
 	"log/slog"
 	"strings"
 )
@@ -26,13 +26,18 @@ func NewCredentials(username string, password string) Credentials {
 	}
 }
 
-// String returns the Credentials struct as a string
+// String returns the Credentials struct as the JSON login payload. Values are escaped, so
+// passwords containing quotes or backslashes are sent correctly.
 func (u Credentials) String() string {
-	//todo: this should be a json.Marshal
-	return fmt.Sprintf(`{"username":"%s","password":"%s","remember":%t,"strict":%t}`, u.Username, u.Password, u.Remember, u.Strict)
+	b, err := json.Marshal(u)
+	if err != nil {
+		// Only unsupported types can fail here, and the struct contains none.
+		return ""
+	}
+	return string(b)
 }
 
-// HttpPayload returns the Credentials struct as a strings.Reader to be used in an http request.go as the body
+// HttpPayload returns the Credentials struct as a strings.Reader to be used in an http request as the body
 func (u Credentials) HttpPayload() *strings.Reader {
 	return strings.NewReader(u.String())
 }

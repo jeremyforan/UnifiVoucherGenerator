@@ -1,11 +1,18 @@
 package UnifiVoucherGenerator
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
-//todo: add logging
-
+// Meta is the status envelope returned by every controller endpoint.
 type Meta struct {
-	Rc string `json:"rc"` // Maps the "rc" field to check if it's "ok"
+	Rc  string `json:"rc"`            // "ok" on success, "error" otherwise
+	Msg string `json:"msg,omitempty"` // error code such as "api.err.LoginRequired", set when Rc is "error"
+}
+
+func (m Meta) ok() bool {
+	return m.Rc == "ok"
 }
 
 type LoginResponse struct {
@@ -41,6 +48,12 @@ type UnifiVoucher struct {
 
 type UnifiVouchers []UnifiVoucher
 
+// VoucherListResponse Define struct for the top-level JSON object
+type VoucherListResponse struct {
+	Meta Meta          `json:"meta"`
+	Data UnifiVouchers `json:"data"`
+}
+
 func processResponse[T any](body string) (*T, error) {
 	var response T
 
@@ -51,7 +64,7 @@ func processResponse[T any](body string) (*T, error) {
 	return &response, nil
 }
 
-// ProcessLoginResponse converts the JSON response from the login endpoint into a struct
+// processLoginResponse converts the JSON response from the login endpoint into a struct
 func processLoginResponse(body string) (*LoginResponse, error) {
 	return processResponse[LoginResponse](body)
 }
@@ -64,16 +77,30 @@ func processNewVoucherRequestResponse(body string) (RequestNewVoucherResponse, e
 	return *t, nil
 }
 
+// processVoucherListResponse decodes the voucher list. A response whose meta.rc is not
+// "ok" (for example an expired session) is returned as an error rather than an empty list.
 func processVoucherListResponse(body string) (UnifiVouchers, error) {
 	t, err := processResponse[VoucherListResponse](body)
 	if err != nil {
 		return UnifiVouchers{}, err
 	}
+	if !t.Meta.ok() {
+		return UnifiVouchers{}, fmt.Errorf("controller returned %q: %s", t.Meta.Rc, t.Meta.Msg)
+	}
 	return t.Data, nil
 }
 
-// VoucherListResponse Define struct for the top-level JSON object
-type VoucherListResponse struct {
-	Meta Meta          `json:"meta"`
-	Data UnifiVouchers `json:"data"`
+// responseMessage extracts a human readable status from a controller response body for
+// use in error messages. It falls back to the raw body when the body is not a known shape.
+func responseMessage(body string) string {
+	var envelope struct {
+		Meta Meta `json:"meta"`
+	}
+	if err := json.Unmarshal([]byte(body), &envelope); err != nil || envelope.Meta.Rc == "" {
+		return body
+	}
+	if envelope.Meta.Msg == "" {
+		return envelope.Meta.Rc
+	}
+	return envelope.Meta.Msg
 }
